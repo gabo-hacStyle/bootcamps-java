@@ -3,6 +3,7 @@ package gabs.tecnologias.infraestructure.adapter.out;
 import gabs.tecnologias.domain.model.Capacidad;
 import gabs.tecnologias.domain.port.CapacidadRepositoryPort;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -18,8 +19,16 @@ public class CapacidadRepositoryImpl implements CapacidadRepositoryPort {
 
 
     @Override
-    public Flux<Capacidad> findAll() {
-        return repository.findAll();
+    public Flux<Capacidad> findPagedByNombreAsc(int size, int offset) {
+        return repository.findPagedByNombreAsc(size, offset);
+    }
+
+    @Override
+    public Flux<Capacidad> findPagedByNombreDesc(int size, int offset) {
+        Flux<Capacidad> result = repository.findPagedByNombreDesc(size, offset);
+        result.doOnNext(r -> System.out.println("Result in repository: " + r.getNombre()))
+                .subscribe(); // Solo para debug, no recomendado fuera de desarrollo
+        return result;
     }
 
     @Override

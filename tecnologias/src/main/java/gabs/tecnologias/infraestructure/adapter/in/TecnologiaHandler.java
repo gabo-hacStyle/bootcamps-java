@@ -24,6 +24,15 @@ public class TecnologiaHandler {
                 .body(all, Tecnologia.class);
 
     }
+
+    public Mono<ServerResponse> getById (ServerRequest request){
+        Long id = Long.valueOf(request.pathVariable("id"));
+        Mono<Tecnologia> tech = service.findById(id);
+
+        return ServerResponse.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(tech, Boolean.class);
+    }
     public Mono<ServerResponse> existsById(ServerRequest request) {
         Long id = Long.valueOf(request.pathVariable("id"));
         Mono<Boolean> techExists = service.existsById(id);

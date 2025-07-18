@@ -6,17 +6,19 @@ import gabs.tecnologias.domain.model.CapacidadTecnologia;
 import gabs.tecnologias.domain.port.CapacidadRepositoryPort;
 import gabs.tecnologias.domain.port.CapacidadTecnologiaRepositoryPort;
 import gabs.tecnologias.dto.CapacidadRequest;
+import gabs.tecnologias.dto.CapacidadResponse;
+import gabs.tecnologias.dto.PageAndQuery;
 import gabs.tecnologias.infraestructure.adapter.in.TecnologiaClient;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.AbstractMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,9 +30,75 @@ public class CapacidadService implements CapacidadUseCases {
     private final TecnologiaClient tecnologiaClient;
 
     @Override
-    public Flux<Capacidad> findAll() { return repository.findAll(); }
+    public Flux<CapacidadResponse> findAll(PageAndQuery consult) {
+        int offset = consult.getSize() * consult.getPage();
+
+        Flux<Capacidad> capacidades;
+        if ("nombre".equalsIgnoreCase(consult.getSortBy())) {
+            capacidades = "desc".equalsIgnoreCase(consult.getDirection())
+                    ? repository.findPagedByNombreDesc(consult.getSize(), offset)
+                    : repository.findPagedByNombreAsc(consult.getSize(), offset);
+        } else {
+            // Si el sortBy es cantidad, primero traemos capacidades paginadas por nombre (puedes elegir), luego ordenamos en memoria
+            capacidades = repository.findPagedByNombreAsc(consult.getSize(), offset);
+        }
+
+        Flux<CapacidadOrderByTechsQuantityDto> responses = capacidades.concatMap(capacidad ->
+                capacidadTecnologiaRepository.findByCapacidadId(capacidad.getId())
+                        .map(CapacidadTecnologia::getTecnologiaId)
+                        .concatMap(tecnologiaClient::getById)
+                        .collectList()
+                        .map(tecnologias -> {
+                            CapacidadResponse r = new CapacidadResponse();
+                            r.setNombre(capacidad.getNombre());
+                            r.setDescripcion(capacidad.getDescripcion());
+                            r.setTecnologiasList(tecnologias);
+                            r.setId(capacidad.getId());
+                            return new CapacidadOrderByTechsQuantityDto(r, tecnologias.size());
+                        })
+        );
+
+        if ("cantidad".equalsIgnoreCase(consult.getSortBy())) {
+            return responses
+                    .collectList()
+                    .flatMapMany(list -> {
+                        Comparator<CapacidadOrderByTechsQuantityDto> comparator = Comparator.comparingInt(CapacidadOrderByTechsQuantityDto::getCantidadTecnologias);
+                        if ("desc".equalsIgnoreCase(consult.getDirection())) comparator = comparator.reversed();
+                        list.sort(comparator);
+                        // Solo retorna el response, no el DTO auxiliar
+                        return Flux.fromIterable(list).map(CapacidadOrderByTechsQuantityDto::getResponse);
+                    });
+        } else {
+            return responses.map(CapacidadOrderByTechsQuantityDto::getResponse);
+        }
+
+
+    }
     @Override
-    public Mono<Capacidad> findById(Long id) { return repository.findById(id); }
+    public Mono<CapacidadResponse> findById(Long id) {
+
+        // Paso 1: Busca la capacidad
+        return repository.findById(id)
+                .flatMap(capacidad ->
+                        // Paso 2: Busca los registros de la tabla intermedia
+                        capacidadTecnologiaRepository.findByCapacidadId(id)
+                                // Paso 3: Obtén el id de cada tecnología
+                                .map(CapacidadTecnologia::getTecnologiaId)
+                                // Paso 4: Llama al micro de tecnologías y obtén el DTO por cada id
+                                .flatMap(tecnologiaClient::getById)
+                                // Paso 5: Junta todos los DTO en una lista
+                                .collectList()
+                                // Paso 6: Arma el response
+                                .map(tecnologias -> {
+                                    CapacidadResponse response = new CapacidadResponse();
+                                    response.setNombre(capacidad.getNombre());
+                                    response.setDescripcion(capacidad.getDescripcion());
+                                    response.setId(capacidad.getId());
+                                    response.setTecnologiasList(tecnologias);
+                                    return response;
+                                })
+                );
+    }
     @Override
     public Mono<Capacidad> register(CapacidadRequest request) {
         return validateTechQuantity(request)
@@ -108,7 +176,6 @@ public class CapacidadService implements CapacidadUseCases {
         return Mono.empty();
     }
 
-    // Validar tecnologías duplicadas
     private Mono<Void> validateDoubleTechs(CapacidadRequest request) {
         HashSet<Long> set = new HashSet<>(request.getTecnologias());
         if (set.size() != request.getTecnologias().size()) {
@@ -145,5 +212,12 @@ public class CapacidadService implements CapacidadUseCases {
 
                     return Mono.just(validIds);
                 });
+    }
+
+    @Data
+    @AllArgsConstructor
+    private class CapacidadOrderByTechsQuantityDto {
+        private CapacidadResponse response;
+        private int cantidadTecnologias;
     }
 }

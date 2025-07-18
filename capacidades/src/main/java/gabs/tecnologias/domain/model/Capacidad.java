@@ -9,7 +9,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 
 @Data
-@Table("capacidades")
+@Table("capacidad")
 @Schema(description = "Skills for every technology applied in the bootcamp of the system")
 public class Capacidad {
     @Id

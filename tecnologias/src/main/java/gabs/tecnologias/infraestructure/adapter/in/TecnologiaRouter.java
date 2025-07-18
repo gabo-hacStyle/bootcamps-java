@@ -15,7 +15,8 @@ public class TecnologiaRouter {
     RouterFunction<ServerResponse> router(TecnologiaHandler handler) {
         return RouterFunctions.route()
                 .GET(PATH, handler::getAll)
-                .GET(PATH + "/{id}", handler::existsById)
+                .GET(PATH + "/exists/{id}", handler::existsById)
+                .GET(PATH + "/{id}", handler::getById)
                 .GET(PATH + "/name/{nombre}", handler::findByNombre)
                 .POST(PATH , handler::save)
                 .PUT(PATH + "/{id}", handler::update)

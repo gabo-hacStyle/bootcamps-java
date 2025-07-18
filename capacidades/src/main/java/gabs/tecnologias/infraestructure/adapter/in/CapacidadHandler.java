@@ -4,7 +4,12 @@ package gabs.tecnologias.infraestructure.adapter.in;
 import gabs.tecnologias.application.port.CapacidadUseCases;
 import gabs.tecnologias.domain.model.Capacidad;
 import gabs.tecnologias.dto.CapacidadRequest;
+import gabs.tecnologias.dto.CapacidadResponse;
+import gabs.tecnologias.dto.PageAndQuery;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -19,18 +24,26 @@ public class CapacidadHandler {
     private final CapacidadUseCases service;
 
     public Mono<ServerResponse> getAll (ServerRequest request) {
-        Flux<Capacidad> all = service.findAll();
+        int page = Integer.parseInt(request.queryParam("page").orElse("0"));
+        int size = Integer.parseInt(request.queryParam("size").orElse("10"));
+        String sortBy = request.queryParam("sortBy").orElse("nombre");
+        String direction = request.queryParam("direction").orElse("asc");
+
+        PageAndQuery consult = new PageAndQuery(page, size, sortBy, direction);
+
+        System.out.println("SortBy: " + consult.getSortBy() + ", Direction: " + consult.getDirection());
+        Flux<CapacidadResponse> all = service.findAll(consult);
         return ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(all, Capacidad.class);
+                .body(all, CapacidadResponse.class);
 
     }
     public Mono<ServerResponse> getById(ServerRequest request) {
         Long id = Long.valueOf(request.pathVariable("id"));
-        Mono<Capacidad> capacidad = service.findById(id);
+        Mono<CapacidadResponse> capacidad = service.findById(id);
         return ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(capacidad, Capacidad.class);
+                .body(capacidad, CapacidadResponse.class);
 
     }
 
