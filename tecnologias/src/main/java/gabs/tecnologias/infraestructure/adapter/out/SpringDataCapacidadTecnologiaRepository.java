@@ -1,4 +1,12 @@
 package gabs.tecnologias.infraestructure.adapter.out;
 
-public class SpringDataCapacidadTecnologiaRepository {
+import gabs.tecnologias.domain.model.CapacidadTecnologia;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+public interface SpringDataCapacidadTecnologiaRepository extends ReactiveCrudRepository<CapacidadTecnologia, Long> {
+    Flux<CapacidadTecnologia> findByCapacidadId(Long capacidadId);
+    Mono<Void> deleteByCapacidadId(Long capacidadId);
+
 }

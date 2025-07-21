@@ -1,9 +1,12 @@
 package gabs.tecnologias.infraestructure.adapter.in;
 
 
+import dto.CapacidadTecnologiaResponse;
+import gabs.tecnologias.application.port.CapacidadTecnologiaUseCases;
 import gabs.tecnologias.application.port.TecnologiaUseCases;
 import gabs.tecnologias.domain.model.Tecnologia;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -11,11 +14,14 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class TecnologiaHandler {
 
     private final TecnologiaUseCases service;
+
 
     public Mono<ServerResponse> getAll (ServerRequest request) {
         Flux<Tecnologia> all = service.findAll();
@@ -73,6 +79,7 @@ public class TecnologiaHandler {
                 .body(service.delete(id), Tecnologia.class);
 
     }
+
 
 
 

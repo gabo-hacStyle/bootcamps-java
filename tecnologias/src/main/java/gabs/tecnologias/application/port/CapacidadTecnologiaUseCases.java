@@ -8,8 +8,8 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 public interface CapacidadTecnologiaUseCases {
-    Flux<List<CapacidadTecnologiaResponse>> getTechnologiesListByCapacidad(Long id);
-    Mono<CapacidadTecnologia> register(Long capacidadId, Long tecnologiaId);
-    
+    Flux<CapacidadTecnologiaResponse> getTechnologiesListByCapacidad(Long id);
+    Flux<CapacidadTecnologia> register(Long capacidadId, List<Long> tecnologiaId);
+
 
 }

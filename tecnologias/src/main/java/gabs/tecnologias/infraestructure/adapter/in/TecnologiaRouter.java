@@ -12,9 +12,11 @@ public class TecnologiaRouter {
     private static final String PATH = "technology";
 
     @Bean
-    RouterFunction<ServerResponse> router(TecnologiaHandler handler) {
+    RouterFunction<ServerResponse> router(TecnologiaHandler handler, CapacidadTecnologiaHandler handlerCap) {
         return RouterFunctions.route()
                 .GET(PATH, handler::getAll)
+                .GET(PATH + "/capacidad/{id}", handlerCap::getTechsByCapacidadId)
+                .POST(PATH + "/capacidad/{id}", handlerCap::saveCapacidadTecnologia)
                 .GET(PATH + "/exists/{id}", handler::existsById)
                 .GET(PATH + "/{id}", handler::getById)
                 .GET(PATH + "/name/{nombre}", handler::findByNombre)
