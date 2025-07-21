@@ -2,8 +2,10 @@ package gabs.tecnologias.infraestructure.adapter.in;
 
 
 import gabs.tecnologias.dto.CapacidadResponse;
+import gabs.tecnologias.dto.Tecnologias;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -25,13 +27,20 @@ public class TecnologiaClient {
 
     }
 
-    public Mono<CapacidadResponse.Tecnologias> getById(Long id) {
+    public Mono<Tecnologias> getById(Long id) {
         return webClient.get()
                 .uri("/{id}", id)
                 .retrieve()
-                .bodyToMono(CapacidadResponse.Tecnologias.class)
-                .defaultIfEmpty(new CapacidadResponse.Tecnologias(null, ""));
+                .bodyToMono(Tecnologias.class)
+                .defaultIfEmpty(new Tecnologias(null, ""));
 
+    }
+
+    public Flux<Tecnologias> getTecnologiasByCapacidadId(Long id) {
+        return webClient.get()
+                .uri("/capacidad/{id}", id)
+                .retrieve()
+                .bodyToFlux(Tecnologias.class);
     }
 
 

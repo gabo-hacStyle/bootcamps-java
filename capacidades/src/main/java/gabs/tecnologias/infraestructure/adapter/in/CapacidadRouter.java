@@ -13,9 +13,10 @@ public class CapacidadRouter {
     private static final String PATH = "skill";
 
     @Bean
-    RouterFunction<ServerResponse> router(CapacidadHandler handler) {
+    RouterFunction<ServerResponse> router(CapacidadHandler handler, CapacidadBootcampHandler handlerBtcamp) {
         return RouterFunctions.route()
                 .GET(PATH, handler::getAll)
+                .GET(PATH + "/bootcamp/{id}", handlerBtcamp::getCapacidadesByBootcamp)
                 .GET(PATH + "/{id}", handler::getById)
                 .GET(PATH + "/name/{nombre}", handler::findByNombre)
                 .POST(PATH , handler::save)
