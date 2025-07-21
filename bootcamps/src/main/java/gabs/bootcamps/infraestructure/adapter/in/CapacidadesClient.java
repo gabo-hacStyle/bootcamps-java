@@ -1,0 +1,45 @@
+package gabs.bootcamps.infraestructure.adapter.in;
+
+
+import gabs.bootcamps.dto.BootcampResponse;
+import gabs.bootcamps.dto.CapacidadDTO;
+import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
+@Component
+
+public class CapacidadesClient {
+
+    private final WebClient webClient;
+
+    public CapacidadesClient(WebClient.Builder builder) {
+        this.webClient = builder.baseUrl("http://localhost:8081/skill").build();
+    }
+
+    public Mono<Boolean> existsTechById(Long id) {
+        return webClient.get()
+                .uri("/exists/{id}", id)
+                .retrieve()
+                .bodyToMono(Boolean.class)
+                .defaultIfEmpty(false);
+
+    }
+
+    public Mono<CapacidadDTO> getById(Long id) {
+        return webClient.get()
+                .uri("/{id}", id)
+                .retrieve()
+                .bodyToMono(CapacidadDTO.class);
+
+    }
+
+    public Mono<Void> delete(Long id) {
+        return webClient.delete()
+                .uri("/{id}", id)
+                .retrieve()
+                .bodyToMono(Void.class);
+    }
+
+
+}
