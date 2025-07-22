@@ -8,6 +8,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Component
 
 public class TecnologiaClient {
@@ -27,20 +29,22 @@ public class TecnologiaClient {
 
     }
 
-    public Mono<Tecnologias> getById(Long id) {
-        return webClient.get()
-                .uri("/{id}", id)
-                .retrieve()
-                .bodyToMono(Tecnologias.class)
-                .defaultIfEmpty(new Tecnologias(null, ""));
 
-    }
 
     public Flux<Tecnologias> getTecnologiasByCapacidadId(Long id) {
         return webClient.get()
                 .uri("/capacidad/{id}", id)
                 .retrieve()
                 .bodyToFlux(Tecnologias.class);
+    }
+
+    public Mono<Void> postTecnologiasByCapacidadId(Long id, List<Long> techsList) {
+        return webClient.post()
+                .uri("/capacidad/{id}", id)
+                .bodyValue(techsList)
+                .retrieve()
+                .bodyToMono(Void.class);
+
     }
 
 

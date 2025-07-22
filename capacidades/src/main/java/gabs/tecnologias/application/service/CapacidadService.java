@@ -2,9 +2,8 @@ package gabs.tecnologias.application.service;
 
 import gabs.tecnologias.application.port.CapacidadUseCases;
 import gabs.tecnologias.domain.model.Capacidad;
-import gabs.tecnologias.domain.model.CapacidadTecnologia;
 import gabs.tecnologias.domain.port.CapacidadRepositoryPort;
-import gabs.tecnologias.domain.port.CapacidadTecnologiaRepositoryPort;
+
 import gabs.tecnologias.dto.CapacidadRequest;
 import gabs.tecnologias.dto.CapacidadResponse;
 import gabs.tecnologias.dto.PageAndQuery;
@@ -12,8 +11,6 @@ import gabs.tecnologias.infraestructure.adapter.in.TecnologiaClient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -26,7 +23,6 @@ import java.util.stream.Collectors;
 public class CapacidadService implements CapacidadUseCases {
 
     private final CapacidadRepositoryPort repository;
-    private final CapacidadTecnologiaRepositoryPort capacidadTecnologiaRepository;
     private final TecnologiaClient tecnologiaClient;
 
     @Override
@@ -44,9 +40,7 @@ public class CapacidadService implements CapacidadUseCases {
         }
 
         Flux<CapacidadOrderByTechsQuantityDto> responses = capacidades.concatMap(capacidad ->
-                capacidadTecnologiaRepository.findByCapacidadId(capacidad.getId())
-                        .map(CapacidadTecnologia::getTecnologiaId)
-                        .concatMap(tecnologiaClient::getById)
+                tecnologiaClient.getTecnologiasByCapacidadId(capacidad.getId())
                         .collectList()
                         .map(tecnologias -> {
                             CapacidadResponse r = new CapacidadResponse();
@@ -74,21 +68,15 @@ public class CapacidadService implements CapacidadUseCases {
 
 
     }
+
     @Override
     public Mono<CapacidadResponse> findById(Long id) {
 
         // Paso 1: Busca la capacidad
         return repository.findById(id)
                 .flatMap(capacidad ->
-                        // Paso 2: Busca los registros de la tabla intermedia
-                        capacidadTecnologiaRepository.findByCapacidadId(id)
-                                // Paso 3: Obtén el id de cada tecnología
-                                .map(CapacidadTecnologia::getTecnologiaId)
-                                // Paso 4: Llama al micro de tecnologías y obtén el DTO por cada id
-                                .flatMap(tecnologiaClient::getById)
-                                // Paso 5: Junta todos los DTO en una lista
+                        tecnologiaClient.getTecnologiasByCapacidadId(capacidad.getId())
                                 .collectList()
-                                // Paso 6: Arma el response
                                 .map(tecnologias -> {
                                     CapacidadResponse response = new CapacidadResponse();
                                     response.setNombre(capacidad.getNombre());
@@ -111,14 +99,7 @@ public class CapacidadService implements CapacidadUseCases {
 
                     return repository.save(capacidad)
                             .flatMap(saved ->
-                                    Flux.fromIterable(validIds)
-                                            .map(tecnologiaId -> {
-                                                CapacidadTecnologia ct = new CapacidadTecnologia();
-                                                ct.setCapacidadId(saved.getId());
-                                                ct.setTecnologiaId(tecnologiaId);
-                                                return ct;
-                                            })
-                                            .flatMap(capacidadTecnologiaRepository::save)
+                                    tecnologiaClient.postTecnologiasByCapacidadId(saved.getId(), validIds)
                                             .then(Mono.just(saved))
                             );
                 });
@@ -134,27 +115,10 @@ public class CapacidadService implements CapacidadUseCases {
                         original.setDescripcion(changes.getDescripcion());
                     }
 
-                    Mono<Void> techValidations = Mono.empty();
-                    if (changes.getTecnologias() != null) {
-                        techValidations = validateTechQuantity(changes)
-                                .then(validateDoubleTechs(changes))
-                                .then(validateTechsExist(changes))
-                                .flatMap(validIds ->
-                                        capacidadTecnologiaRepository.deleteByCapacidadId(id)
-                                                .thenMany(Flux.fromIterable(validIds)
-                                                        .map(tecnologiaId -> {
-                                                            CapacidadTecnologia ct = new CapacidadTecnologia();
-                                                            ct.setCapacidadId(id);
-                                                            ct.setTecnologiaId(tecnologiaId);
-                                                            return ct;
-                                                        })
-                                                        .flatMap(capacidadTecnologiaRepository::save)
-                                                )
-                                                .then()
-                                );
-                    }
 
-                    return techValidations.then(repository.save(original));
+
+
+                    return repository.save(original);
                 });
     }
 
