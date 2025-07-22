@@ -19,7 +19,7 @@ public class CapacidadRouter {
                 .GET(PATH + "/bootcamp/{id}", handlerBtcamp::getCapacidadesByBootcamp)
                 .POST(PATH + "/bootcamp/{id}", handlerBtcamp::saveCapacidadBootcamp)
                 .GET(PATH + "/{id}", handler::getById)
-                .GET(PATH + "/name/{nombre}", handler::findByNombre)
+                .GET(PATH + "/exists/{id}", handler::existsById)
                 .POST(PATH , handler::save)
                 .PUT(PATH + "/{id}", handler::update)
                 .DELETE(PATH + "/{id}", handler::delete)

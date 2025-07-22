@@ -14,7 +14,7 @@ public interface CapacidadRepositoryPort {
 
     Mono<Capacidad> findById(Long id);
     Mono<Capacidad> findByNombre(String nombre);
-    Mono<Boolean> existsByNombre(String nombre);
+    Mono<Boolean> existsById(Long id);
     Mono<Capacidad> save(Capacidad capacidad);
     Mono<Void> deleteById(Long id);
 }

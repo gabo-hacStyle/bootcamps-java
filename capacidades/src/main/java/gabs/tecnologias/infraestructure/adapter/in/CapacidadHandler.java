@@ -55,12 +55,12 @@ public class CapacidadHandler {
 
     }
 
-    public Mono<ServerResponse> findByNombre(ServerRequest request) {
-        String nombre =request.pathVariable("nombre");
-        Mono<Capacidad> tecnologia = service.findByNombre(nombre);
+    public Mono<ServerResponse> existsById(ServerRequest request) {
+        Long id = Long.valueOf(request.pathVariable("id"));
+        Mono<Boolean> exists = service.existsById(id);
         return ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(tecnologia, Capacidad.class);
+                .body(exists, Boolean.class);
 
     }
 

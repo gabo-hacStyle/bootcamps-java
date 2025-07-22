@@ -17,7 +17,7 @@ public class TecnologiaClient {
     private final WebClient webClient;
 
     public TecnologiaClient(WebClient.Builder builder) {
-        this.webClient = builder.baseUrl("http://localhost:8080/technology").build();
+        this.webClient = builder.baseUrl("http://tecnologias-micro:8085/technology").build();
     }
 
     public Mono<Boolean> existsTechById(Long id) {

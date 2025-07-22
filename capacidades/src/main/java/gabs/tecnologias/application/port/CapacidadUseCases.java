@@ -15,6 +15,7 @@ public interface CapacidadUseCases {
      Mono<CapacidadResponse> findById(Long id);
      Mono<Capacidad> register(CapacidadRequest capacidadRequest);
      Mono<Capacidad> updateParcial(Long id, CapacidadRequest capacidad);
-     Mono<Capacidad> findByNombre(String nombre);
+     Mono<Boolean> existsById(Long id);
      Mono<Void> delete(Long id);
+
 }

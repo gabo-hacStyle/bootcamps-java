@@ -123,8 +123,8 @@ public class CapacidadService implements CapacidadUseCases {
     }
 
     @Override
-    public Mono<Capacidad> findByNombre(String nombre){
-        return repository.findByNombre(nombre);
+    public Mono<Boolean> existsById(Long id){
+        return repository.existsById(id);
     }
 
     @Override

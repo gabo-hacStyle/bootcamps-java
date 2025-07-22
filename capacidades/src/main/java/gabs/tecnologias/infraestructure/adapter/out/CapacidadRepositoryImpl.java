@@ -3,7 +3,6 @@ package gabs.tecnologias.infraestructure.adapter.out;
 import gabs.tecnologias.domain.model.Capacidad;
 import gabs.tecnologias.domain.port.CapacidadRepositoryPort;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -42,8 +41,8 @@ public class CapacidadRepositoryImpl implements CapacidadRepositoryPort {
     }
 
     @Override
-    public Mono<Boolean> existsByNombre(String nombre) {
-        return repository.existsByNombre(nombre);
+    public Mono<Boolean> existsById(Long id) {
+        return repository.existsById(id);
     }
 
     @Override

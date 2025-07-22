@@ -41,13 +41,20 @@ public class BootcampService implements BootcampUseCases {
     @Override
     public Mono<BootcampResponse> findById(Long id) {
 
-       return null;
+
+       return repository.findById(id)
+               .flatMap(bootcamp ->
+                       capacidadesClient.getById(bootcamp.getId())
+                               .collectList()
+
+               );
     }
 
     @Override
     public Mono<Bootcamp> register(BootcampRequest request) {
         return validateDoubleCapacities(request.getCapacidades())
                 .then(validateCapsQuantity(request.getCapacidades()))
+                .then(validateCapsExist(request.getCapacidades()))
                 .flatMap(capsIds -> {
                     Bootcamp bootcamp = new Bootcamp();
                     bootcamp.setNombre(request.getNombre());
@@ -79,12 +86,44 @@ public class BootcampService implements BootcampUseCases {
                 .then(repository.deleteById(id));
     }
 
-    private Mono<List<Long>> validateCapsQuantity(List<Long> capacidades) {
+
+    private Mono<List<Long>> validateCapsExist(List<Long> capacidades) {
+
+
+        return Flux.fromIterable(capacidades)
+                .flatMap(id ->
+                        capacidadesClient.existsCapsById(id)
+                                .map(exists -> new AbstractMap.SimpleEntry<>(id, exists))
+                )
+                .collectList()
+                .flatMap(results -> {
+                    List<Long> invalidIds = results.stream()
+                            .filter(entry -> !entry.getValue())
+                            .map(Map.Entry::getKey)
+                            .toList();
+
+                    if (!invalidIds.isEmpty()) {
+                        String msg = "Las siguientes capacidades no existen: " + invalidIds;
+                        return Mono.error(new IllegalArgumentException(msg));
+                    }
+
+                    // Solo devuelve los ids válidos (o todos, si todos existen)
+                    List<Long> validIds = results.stream()
+                            .filter(Map.Entry::getValue)
+                            .map(Map.Entry::getKey)
+                            .collect(Collectors.toList());
+
+                    return Mono.just(validIds);
+                });
+    }
+
+
+    private Mono<Void> validateCapsQuantity(List<Long> capacidades) {
         if (capacidades == null || capacidades.size() < 1 || capacidades.size() > 4) {
             return Mono.error(new IllegalArgumentException("Debe asociar entre 1 y 4 capacidades."));
         }
 
-        return Mono.just(capacidades);
+        return Mono.empty();
     }
 
     private Mono<Void> validateDoubleCapacities(List<Long> capacidades) {

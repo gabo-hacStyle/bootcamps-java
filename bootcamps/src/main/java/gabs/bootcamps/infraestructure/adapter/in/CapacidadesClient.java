@@ -5,6 +5,7 @@ import gabs.bootcamps.dto.BootcampResponse;
 import gabs.bootcamps.dto.CapacidadDTO;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class CapacidadesClient {
         this.webClient = builder.baseUrl("http://localhost:8081/skill").build();
     }
 
-    public Mono<Boolean> existsTechById(Long id) {
+    public Mono<Boolean> existsCapsById(Long id) {
         return webClient.get()
                 .uri("/exists/{id}", id)
                 .retrieve()
@@ -35,9 +36,9 @@ public class CapacidadesClient {
                 .bodyToMono(Void.class);
     }
 
-    public Mono<CapacidadDTO> getById(Long id) {
+    public Flux<CapacidadDTO> getById(Long id) {
         return webClient.get()
-                .uri("/{id}", id)
+                .uri("/bootcamp/{id}", id)
                 .retrieve()
                 .bodyToMono(CapacidadDTO.class);
 

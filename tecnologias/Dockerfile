@@ -8,5 +8,5 @@ RUN gradle clean build --no-daemon
 FROM eclipse-temurin:21-jdk-jammy
 WORKDIR /app
 COPY --from=build /home/gradle/app/build/libs/tecnologias-0.0.1-SNAPSHOT.jar app.jar
-EXPOSE 8080
+EXPOSE 8085
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
