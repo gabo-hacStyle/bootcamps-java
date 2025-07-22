@@ -8,18 +8,18 @@ import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
 @Configuration
-public class CapacidadRouter {
-    private static final String PATH = "skill";
+public class BootcampRouter {
+    private static final String PATH = "bootcamp";
 
     @Bean
-    RouterFunction<ServerResponse> router(CapacidadHandler handler) {
+    RouterFunction<ServerResponse> router(BootcampHandler handler) {
         return RouterFunctions.route()
-                .GET(PATH, handler::getAll)
-                .GET(PATH + "/{id}", handler::getById)
-                .GET(PATH + "/name/{nombre}", handler::findByNombre)
+                //.GET(PATH, handler::getAll)
+                //.GET(PATH + "/{id}", handler::getById)
+                //.GET(PATH + "/name/{nombre}", handler::findByNombre)
                 .POST(PATH , handler::save)
-                .PUT(PATH + "/{id}", handler::update)
-                .DELETE(PATH + "/{id}", handler::delete)
+                //.PUT(PATH + "/{id}", handler::update)
+                //.DELETE(PATH + "/{id}", handler::delete)
                 .build();
 
     }

@@ -17,10 +17,4 @@ public class BootcampResponse {
     private Integer duracion;
     private List<CapacidadDTO> capacidades;
 
-
-
-
-
-
-
 }

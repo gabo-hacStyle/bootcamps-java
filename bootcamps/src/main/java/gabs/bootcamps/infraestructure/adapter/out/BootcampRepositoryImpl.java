@@ -15,7 +15,10 @@ public class BootcampRepositoryImpl implements BootcampRepositoryPort {
     private final SpringDataCapacidadRepository repository;
 
 
-
+    @Override
+    public Flux<Bootcamp> findAll() {
+        return null;
+    }
 
     @Override
     public Flux<Bootcamp> findPagedByNombreAsc(int size, int offset) {
