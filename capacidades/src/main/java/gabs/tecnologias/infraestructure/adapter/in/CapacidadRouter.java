@@ -17,6 +17,7 @@ public class CapacidadRouter {
         return RouterFunctions.route()
                 .GET(PATH, handler::getAll)
                 .GET(PATH + "/bootcamp/{id}", handlerBtcamp::getCapacidadesByBootcamp)
+                .POST(PATH + "/bootcamp/{id}", handlerBtcamp::saveCapacidadBootcamp)
                 .GET(PATH + "/{id}", handler::getById)
                 .GET(PATH + "/name/{nombre}", handler::findByNombre)
                 .POST(PATH , handler::save)
