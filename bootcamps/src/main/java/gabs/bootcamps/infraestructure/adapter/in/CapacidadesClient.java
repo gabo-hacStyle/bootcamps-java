@@ -40,7 +40,7 @@ public class CapacidadesClient {
         return webClient.get()
                 .uri("/bootcamp/{id}", id)
                 .retrieve()
-                .bodyToMono(CapacidadDTO.class);
+                .bodyToFlux(CapacidadDTO.class);
 
     }
 

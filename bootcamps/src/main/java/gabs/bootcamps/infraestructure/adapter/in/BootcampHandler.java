@@ -42,14 +42,14 @@ public class BootcampHandler {
     //            .body(all, BootcampResponse.class);
 //
     //}
-    //public Mono<ServerResponse> getById(ServerRequest request) {
-    //    Long id = Long.valueOf(request.pathVariable("id"));
-    //    Mono<BootcampResponse> capacidad = service.findById(id);
-    //    return ServerResponse.ok()
-    //            .contentType(MediaType.APPLICATION_JSON)
-    //            .body(capacidad, BootcampResponse.class);
-//
-    //}
+    public Mono<ServerResponse> getById(ServerRequest request) {
+        Long id = Long.valueOf(request.pathVariable("id"));
+        Mono<BootcampResponse> capacidad = service.findById(id);
+        return ServerResponse.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(capacidad, BootcampResponse.class);
+
+    }
 
     //public Mono<ServerResponse> findByNombre(ServerRequest request) {
     //    String nombre =request.pathVariable("nombre");

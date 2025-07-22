@@ -46,6 +46,16 @@ public class BootcampService implements BootcampUseCases {
                .flatMap(bootcamp ->
                        capacidadesClient.getById(bootcamp.getId())
                                .collectList()
+                               .map(capacidades -> {
+                                   BootcampResponse response = new BootcampResponse();
+                                   response.setNombre(bootcamp.getNombre());
+                                   response.setDescripcion(bootcamp.getDescripcion());
+                                   response.setId(bootcamp.getId());
+                                   response.setDuracion(bootcamp.getDuracion());
+                                   response.setFechaLanzamiento(bootcamp.getFechaLanzamiento());
+                                   response.setCapacidades(capacidades);
+                                   return response;
+                               })
 
                );
     }
