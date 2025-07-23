@@ -12,4 +12,6 @@ public interface CapacidadBootcampUseCases {
 
     Flux<CapacidadBootcamp> saveCapacidadBootcamp(Long bootcampId, List<Long> capacidadesList);
 
+    Mono<Void> deleteCapacidadesByBootcampId(Long bootcampId);
+
 }

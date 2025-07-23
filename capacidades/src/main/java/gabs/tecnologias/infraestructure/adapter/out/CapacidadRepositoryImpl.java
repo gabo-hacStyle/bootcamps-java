@@ -24,10 +24,8 @@ public class CapacidadRepositoryImpl implements CapacidadRepositoryPort {
 
     @Override
     public Flux<Capacidad> findPagedByNombreDesc(int size, int offset) {
-        Flux<Capacidad> result = repository.findPagedByNombreDesc(size, offset);
-        result.doOnNext(r -> System.out.println("Result in repository: " + r.getNombre()))
-                .subscribe(); // Solo para debug, no recomendado fuera de desarrollo
-        return result;
+        return repository.findPagedByNombreDesc(size, offset);
+
     }
 
     @Override

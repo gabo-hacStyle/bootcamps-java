@@ -47,5 +47,13 @@ public class TecnologiaClient {
 
     }
 
+    public Mono<Void> deleteTechnologiasByCapacidadDeleted(Long capacidadId){
+        return webClient.delete()
+                .uri("/capacidad/{id}", capacidadId)
+                .retrieve()
+                .bodyToMono(Void.class);
+
+    }
+
 
 }

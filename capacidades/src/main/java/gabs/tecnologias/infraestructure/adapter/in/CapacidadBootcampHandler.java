@@ -38,4 +38,12 @@ public class CapacidadBootcampHandler {
                 .then(ServerResponse.ok().build());
 
     }
+
+    public Mono<ServerResponse> deleteCapacidadesByBootcampDeleted(ServerRequest request) {
+        Long id = Long.parseLong(request.pathVariable("id"));
+
+        return ServerResponse.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(service.deleteCapacidadesByBootcampId(id), Void.class);
+    }
 }

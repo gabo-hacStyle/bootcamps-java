@@ -53,4 +53,14 @@ public class CapacidadBootcampService implements CapacidadBootcampUseCases {
                 })
                 .flatMap(repository::save);
     }
+
+    @Override
+    public Mono<Void> deleteCapacidadesByBootcampId(Long bootcampId) {
+        return repository.findExclusiveCapacidadesOfBootcamp(bootcampId)
+                .flatMap(capacidadId ->
+                        tecnologiaClient.deleteTechnologiasByCapacidadDeleted(capacidadId)
+                                .then(capacidadRepository.deleteById(capacidadId))
+                )
+                .then();
+    }
 }

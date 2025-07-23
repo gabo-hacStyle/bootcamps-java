@@ -22,4 +22,9 @@ public class CapacidadBootcampRepositoryImpl implements CapacidadBootcampReposit
     public Mono<CapacidadBootcamp> save(CapacidadBootcamp capacidadBootcamp) {
         return repository.save(capacidadBootcamp);
     }
+
+    @Override
+    public Flux<Long> findExclusiveCapacidadesOfBootcamp(Long bootcampId) {
+        return repository.findExclusiveCapacidadesOfBootcamp(bootcampId);
+    }
 }

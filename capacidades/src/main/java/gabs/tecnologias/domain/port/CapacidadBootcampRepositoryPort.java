@@ -7,4 +7,5 @@ import reactor.core.publisher.Mono;
 public interface CapacidadBootcampRepositoryPort {
     Flux<CapacidadBootcamp> findByBootcampId(Long bootcampId);
     Mono<CapacidadBootcamp> save(CapacidadBootcamp capacidadBootcamp);
+    Flux<Long> findExclusiveCapacidadesOfBootcamp(Long bootcampId);
 }
