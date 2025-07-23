@@ -25,23 +25,24 @@ public class BootcampHandler {
 
     private final BootcampUseCases service;
 
-    //public Mono<ServerResponse> getAll (ServerRequest request) {
-    //    int page = Integer.parseInt(request.queryParam("page").orElse("0"));
-    //    int size = Integer.parseInt(request.queryParam("size").orElse("10"));
-    //    String sortBy = request.queryParam("sortBy").orElse("nombre");
-    //    String direction = request.queryParam("direction").orElse("asc");
-//
-    //    PageAndQuery consult = new PageAndQuery(page, size, sortBy, direction);
-//
-    //    System.out.println("SortBy: " + consult.getSortBy() + ", Direction: " + consult.getDirection());
-    //    log.info("SortBy: {}, Direction: {}", consult.getSortBy(), consult.getDirection());
-//
-    //    Flux<BootcampResponse> all = service.findAll(consult);
-    //    return ServerResponse.ok()
-    //            .contentType(MediaType.APPLICATION_JSON)
-    //            .body(all, BootcampResponse.class);
-//
-    //}
+
+    public Mono<ServerResponse> getAll (ServerRequest request) {
+        int page = Integer.parseInt(request.queryParam("page").orElse("0"));
+        int size = Integer.parseInt(request.queryParam("size").orElse("10"));
+        String sortBy = request.queryParam("sortBy").orElse("nombre");
+        String direction = request.queryParam("direction").orElse("asc");
+
+        PageAndQuery consult = new PageAndQuery(page, size, sortBy, direction);
+
+        System.out.println("SortBy: " + consult.getSortBy() + ", Direction: " + consult.getDirection());
+        log.info("SortBy: {}, Direction: {}", consult.getSortBy(), consult.getDirection());
+
+        Flux<BootcampResponse> all = service.findAll(consult);
+        return ServerResponse.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(all, BootcampResponse.class);
+
+    }
     public Mono<ServerResponse> getById(ServerRequest request) {
         Long id = Long.valueOf(request.pathVariable("id"));
         Mono<BootcampResponse> capacidad = service.findById(id);

@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono;
 
 public interface BootcampUseCases {
 
-     Flux<BootcampResponse> findAll();
+     Flux<BootcampResponse> findAll(PageAndQuery consult);
      Mono<BootcampResponse> findById(Long id);
      Mono<Bootcamp> register(BootcampRequest request);
 

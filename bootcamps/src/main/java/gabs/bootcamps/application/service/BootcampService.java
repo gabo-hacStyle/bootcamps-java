@@ -30,13 +30,50 @@ public class BootcampService implements BootcampUseCases {
     private final CapacidadesClient capacidadesClient;
 
     @Override
-    public Flux<BootcampResponse> findAll() {
-        return null;
+    public Flux<BootcampResponse> findAll(PageAndQuery consult) {
+        int offset = consult.getSize() * consult.getPage();
+
+        Flux<Bootcamp> bootcamps;
+
+        if("nombre".equalsIgnoreCase(consult.getSortBy())){
+            bootcamps = "desc".equalsIgnoreCase(consult.getDirection())
+                    ? repository.findPagedByNombreDesc(consult.getSize(), offset)
+                    : repository.findPagedByNombreAsc(consult.getSize(), offset);
+        } else {
+            bootcamps = repository.findPagedByNombreAsc(consult.getSize(), offset);
+        }
+
+        Flux<BootcampOrderByCapsQuantityDto> response = bootcamps.concatMap(btcmp ->
+                capacidadesClient.getById(btcmp.getId())
+                        .collectList()
+                        .map(caps -> {
+                            BootcampResponse b = new BootcampResponse();
+                            b.setNombre(btcmp.getNombre());
+                            b.setDescripcion(btcmp.getDescripcion());
+                            b.setDuracion(btcmp.getDuracion());
+                            b.setFechaLanzamiento(btcmp.getFechaLanzamiento());
+                            b.setCapacidades(caps);
+                            b.setId(btcmp.getId());
+                            return new BootcampOrderByCapsQuantityDto(b, caps.size());
+                        })
+                );
+
+        if ("cantidad".equalsIgnoreCase(consult.getSortBy())) {
+            return response
+                    .collectList()
+                    .flatMapMany(list -> {
+                        Comparator<BootcampOrderByCapsQuantityDto> comparator = Comparator.comparingInt(BootcampOrderByCapsQuantityDto::getCantidadTecnologias);
+                        if ("desc".equalsIgnoreCase(consult.getDirection())) comparator = comparator.reversed();
+                        list.sort(comparator);
+                        // Solo retorna el response, no el DTO auxiliar
+                        return Flux.fromIterable(list).map(BootcampOrderByCapsQuantityDto::getResponse);
+                    });
+        } else {
+            return response.map(BootcampOrderByCapsQuantityDto::getResponse);
+        }
+
+
     }
-
-
-
-
 
     @Override
     public Mono<BootcampResponse> findById(Long id) {
@@ -84,11 +121,6 @@ public class BootcampService implements BootcampUseCases {
 
     }
 
-
-    //@Override
-    //public Mono<Bootcamp> findByNombre(String nombre){
-      //  return repository.findByNombre(nombre);
-//    }
 
     @Override
     public Mono<Void> delete(Long id) {
@@ -142,6 +174,13 @@ public class BootcampService implements BootcampUseCases {
             return Mono.error(new IllegalArgumentException("No se permiten tecnologías repetidas."));
         }
         return Mono.empty();
+    }
+
+    @Data
+    @AllArgsConstructor
+    private class BootcampOrderByCapsQuantityDto {
+        private BootcampResponse response;
+        private int cantidadTecnologias;
     }
 
 

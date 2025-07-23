@@ -14,7 +14,7 @@ public class BootcampRouter {
     @Bean
     RouterFunction<ServerResponse> router(BootcampHandler handler) {
         return RouterFunctions.route()
-                //.GET(PATH, handler::getAll)
+                .GET(PATH, handler::getAll)
                 .GET(PATH + "/{id}", handler::getById)
                 //.GET(PATH + "/name/{nombre}", handler::findByNombre)
                 .POST(PATH , handler::save)
