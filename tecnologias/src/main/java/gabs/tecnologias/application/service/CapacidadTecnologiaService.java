@@ -46,4 +46,11 @@ public class CapacidadTecnologiaService implements CapacidadTecnologiaUseCases {
                 .flatMap(repository::save);
     }
 
+    @Override
+    public Mono<Void> deleteTecnologiasByCapacidadId(Long capacidadId) {
+        return repository.findExclusiveTechsOfCapacidad(capacidadId)
+                .flatMap(tecnologiaRepository::deleteById)
+                .then();
+    }
+
 }

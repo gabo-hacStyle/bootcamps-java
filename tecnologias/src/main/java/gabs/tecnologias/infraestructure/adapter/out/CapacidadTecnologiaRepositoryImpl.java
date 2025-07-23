@@ -28,4 +28,9 @@ public class CapacidadTecnologiaRepositoryImpl implements CapacidadTecnologiaRep
     public Mono<Void> deleteByCapacidadId(Long capacidadId) {
         return repository.deleteByCapacidadId(capacidadId);
     }
+
+    @Override
+    public Flux<Long> findExclusiveTechsOfCapacidad(Long capacidadId) {
+        return repository.findExclusiveTechsOfCapacidad(capacidadId);
+    }
 }

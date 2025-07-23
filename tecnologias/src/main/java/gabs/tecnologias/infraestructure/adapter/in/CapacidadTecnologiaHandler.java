@@ -37,4 +37,10 @@ public class CapacidadTecnologiaHandler {
                 .flatMap(tecnologiaIds -> capService.register(capacidadId, tecnologiaIds).then())
                 .then(ServerResponse.ok().build());
     }
+
+    public Mono<ServerResponse> deleteTecnologiasOfCapacidadId(ServerRequest request){
+        Long id = Long.valueOf(request.pathVariable("id"));
+        return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
+                .body(capService.deleteTecnologiasByCapacidadId(id), Void.class);
+    }
 }

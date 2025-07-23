@@ -10,13 +10,15 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 @Configuration
 public class TecnologiaRouter {
     private static final String PATH = "technology";
+    private static final String CAP_PATH = PATH + "/capacidad";
 
     @Bean
     RouterFunction<ServerResponse> router(TecnologiaHandler handler, CapacidadTecnologiaHandler handlerCap) {
         return RouterFunctions.route()
                 .GET(PATH, handler::getAll)
-                .GET(PATH + "/capacidad/{id}", handlerCap::getTechsByCapacidadId)
-                .POST(PATH + "/capacidad/{id}", handlerCap::saveCapacidadTecnologia)
+                .GET(CAP_PATH+  "/{id}", handlerCap::getTechsByCapacidadId)
+                .POST(CAP_PATH+  "/{id}", handlerCap::saveCapacidadTecnologia)
+                .DELETE(CAP_PATH + "/{id}", handlerCap::deleteTecnologiasOfCapacidadId)
                 .GET(PATH + "/exists/{id}", handler::existsById)
                 .GET(PATH + "/{id}", handler::getById)
                 .GET(PATH + "/name/{nombre}", handler::findByNombre)

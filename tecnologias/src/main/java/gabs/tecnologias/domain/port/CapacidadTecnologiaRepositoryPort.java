@@ -8,4 +8,5 @@ public interface CapacidadTecnologiaRepositoryPort {
     Flux<CapacidadTecnologia> findByCapacidadId(Long capacidadId);
     Mono<CapacidadTecnologia> save(CapacidadTecnologia capacidadTecnologia);
     Mono<Void> deleteByCapacidadId(Long capacidadId);
+    Flux<Long> findExclusiveTechsOfCapacidad(Long capacidadId);
 }
