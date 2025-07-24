@@ -10,7 +10,7 @@ import java.util.List;
 public interface CapacidadTecnologiaUseCases {
     Flux<CapacidadTecnologiaResponse> getTechnologiesListByCapacidad(Long id);
     Flux<CapacidadTecnologia> register(Long capacidadId, List<Long> tecnologiaId);
-    Mono<Void> deleteTecnologiasByCapacidadId(Long capacidadId);
+    Mono<Void> deleteCapacidadesByCapacidadesIds(List<Long> capacidadesId);
 
 
 }

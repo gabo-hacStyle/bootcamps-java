@@ -19,7 +19,7 @@ public class BootcampRouter {
                 //.GET(PATH + "/name/{nombre}", handler::findByNombre)
                 .POST(PATH , handler::save)
                 //.PUT(PATH + "/{id}", handler::update)
-                //.DELETE(PATH + "/{id}", handler::delete)
+                .DELETE(PATH + "/{id}", handler::delete)
                 .build();
 
     }

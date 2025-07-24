@@ -12,7 +12,9 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -38,9 +40,17 @@ public class CapacidadTecnologiaHandler {
                 .then(ServerResponse.ok().build());
     }
 
-    public Mono<ServerResponse> deleteTecnologiasOfCapacidadId(ServerRequest request){
-        Long id = Long.valueOf(request.pathVariable("id"));
-        return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
-                .body(capService.deleteTecnologiasByCapacidadId(id), Void.class);
+    public Mono<ServerResponse> deleteTecnologiasOfCapacidadesIds(ServerRequest request){
+        List<Long> ids = request.queryParams().getOrDefault("ids", List.of())
+                .stream()
+                .flatMap(idsStr -> Arrays.stream(idsStr.split(",")))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(Long::valueOf)
+                .toList();
+
+        // 2. Llama al servicio reactivo
+        return capService.deleteCapacidadesByCapacidadesIds(ids)
+                .then(ServerResponse.ok().build());
     }
 }

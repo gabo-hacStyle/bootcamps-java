@@ -9,6 +9,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 
@@ -47,9 +48,17 @@ public class TecnologiaClient {
 
     }
 
-    public Mono<Void> deleteTechnologiasByCapacidadDeleted(Long capacidadId){
+    public Mono<Void> deleteTechnologiasByCapacidadDeleted(List<Long> capacidadesIds){
+
+        String idsParam = capacidadesIds.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(","));
         return webClient.delete()
-                .uri("/capacidad/{id}", capacidadId)
+                .uri(uriBuilder -> uriBuilder
+                        .path("/capacidad")
+                        .queryParam("ids", idsParam)
+                        .build()
+                )
                 .retrieve()
                 .bodyToMono(Void.class);
 

@@ -46,7 +46,7 @@ public class CapacidadesClient {
 
     public Mono<Void> delete(Long id) {
         return webClient.delete()
-                .uri("/{id}", id)
+                .uri("/bootcamp/{id}", id)
                 .retrieve()
                 .bodyToMono(Void.class);
     }

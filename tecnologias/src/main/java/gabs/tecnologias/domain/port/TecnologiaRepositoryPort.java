@@ -13,4 +13,5 @@ public interface TecnologiaRepositoryPort {
     Mono<Boolean> existsById(Long id);
     Mono<Tecnologia> save(Tecnologia tecnologia);
     Mono<Void> deleteById(Long id);
+    Mono<Void> deleteAllById(Iterable<Long> ids);
 }

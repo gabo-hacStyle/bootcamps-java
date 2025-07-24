@@ -52,4 +52,9 @@ public class TecnologiaRepositoryImpl implements TecnologiaRepositoryPort {
     public Mono<Void> deleteById(Long id) {
         return repository.deleteById(id);
     }
+
+    @Override
+    public Mono<Void> deleteAllById(Iterable<Long> ids) {
+        return repository.deleteAllById(ids);
+    }
 }

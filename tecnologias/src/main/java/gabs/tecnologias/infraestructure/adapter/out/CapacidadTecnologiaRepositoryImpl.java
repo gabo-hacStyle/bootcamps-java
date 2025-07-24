@@ -8,6 +8,8 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Repository
 @RequiredArgsConstructor
 public class CapacidadTecnologiaRepositoryImpl implements CapacidadTecnologiaRepositoryPort {
@@ -25,12 +27,12 @@ public class CapacidadTecnologiaRepositoryImpl implements CapacidadTecnologiaRep
     }
 
     @Override
-    public Mono<Void> deleteByCapacidadId(Long capacidadId) {
-        return repository.deleteByCapacidadId(capacidadId);
+    public Flux<Long> findExclusiveTechsByCapacidadesIds(List<Long> capacidadId) {
+        return repository.findExclusiveTechsByCapacidadesIds(capacidadId);
     }
 
     @Override
-    public Flux<Long> findExclusiveTechsOfCapacidad(Long capacidadId) {
-        return repository.findExclusiveTechsOfCapacidad(capacidadId);
+    public Mono<Void> deleteByCapacidadesIds(List<Long> capacidadesIds) {
+        return repository.deleteByCapacidadesIds(capacidadesIds);
     }
 }

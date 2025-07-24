@@ -8,4 +8,5 @@ public interface CapacidadBootcampRepositoryPort {
     Flux<CapacidadBootcamp> findByBootcampId(Long bootcampId);
     Mono<CapacidadBootcamp> save(CapacidadBootcamp capacidadBootcamp);
     Flux<Long> findExclusiveCapacidadesOfBootcamp(Long bootcampId);
+    Mono<Void> deleteByBootcampId(Long bootcampId);
 }

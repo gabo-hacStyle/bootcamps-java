@@ -18,7 +18,7 @@ public class TecnologiaRouter {
                 .GET(PATH, handler::getAll)
                 .GET(CAP_PATH+  "/{id}", handlerCap::getTechsByCapacidadId)
                 .POST(CAP_PATH+  "/{id}", handlerCap::saveCapacidadTecnologia)
-                .DELETE(CAP_PATH + "/{id}", handlerCap::deleteTecnologiasOfCapacidadId)
+                .DELETE(CAP_PATH , handlerCap::deleteTecnologiasOfCapacidadesIds)
                 .GET(PATH + "/exists/{id}", handler::existsById)
                 .GET(PATH + "/{id}", handler::getById)
                 .GET(PATH + "/name/{nombre}", handler::findByNombre)

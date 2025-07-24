@@ -27,4 +27,9 @@ public class CapacidadBootcampRepositoryImpl implements CapacidadBootcampReposit
     public Flux<Long> findExclusiveCapacidadesOfBootcamp(Long bootcampId) {
         return repository.findExclusiveCapacidadesOfBootcamp(bootcampId);
     }
+
+    @Override
+    public Mono<Void> deleteByBootcampId(Long bootcampId) {
+        return repository.deleteByBootcampId(bootcampId);
+    }
 }

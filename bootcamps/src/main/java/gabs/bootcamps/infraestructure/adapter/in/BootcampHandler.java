@@ -76,13 +76,13 @@ public class BootcampHandler {
 //
     //}
 //
-    //public Mono<ServerResponse> delete(ServerRequest request) {
-    //    Long id = Long.valueOf(request.pathVariable("id"));
-    //    return ServerResponse.ok()
-    //            .contentType(MediaType.APPLICATION_JSON)
-    //            .body(service.delete(id), Bootcamp.class);
-//
-    //}
+    public Mono<ServerResponse> delete(ServerRequest request) {
+        Long id = Long.valueOf(request.pathVariable("id"));
+        return ServerResponse.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(service.delete(id), Void.class);
+
+    }
 
 
 
