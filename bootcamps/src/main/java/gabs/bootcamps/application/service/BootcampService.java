@@ -5,11 +5,8 @@ import gabs.bootcamps.domain.model.Bootcamp;
 
 import gabs.bootcamps.domain.port.BootcampRepositoryPort;
 
-import gabs.bootcamps.dto.BootcampRequest;
-import gabs.bootcamps.dto.CapacidadDTO;
+import gabs.bootcamps.dto.*;
 
-import gabs.bootcamps.dto.BootcampResponse;
-import gabs.bootcamps.dto.PageAndQuery;
 import gabs.bootcamps.infraestructure.adapter.in.CapacidadesClient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -54,6 +51,7 @@ public class BootcampService implements BootcampUseCases {
                             b.setFechaLanzamiento(btcmp.getFechaLanzamiento());
                             b.setCapacidades(caps);
                             b.setId(btcmp.getId());
+                            b.setFechaFinalizacion(btcmp.getFechaLanzamiento().plusDays(btcmp.getDuracion()));
                             return new BootcampOrderByCapsQuantityDto(b, caps.size());
                         })
                 );
@@ -90,11 +88,30 @@ public class BootcampService implements BootcampUseCases {
                                    response.setId(bootcamp.getId());
                                    response.setDuracion(bootcamp.getDuracion());
                                    response.setFechaLanzamiento(bootcamp.getFechaLanzamiento());
+                                   response.setFechaFinalizacion(
+                                           bootcamp.getFechaLanzamiento().plusDays(bootcamp.getDuracion())
+                                   );
                                    response.setCapacidades(capacidades);
                                    return response;
                                })
 
                );
+    }
+
+    @Override
+    public Mono<BootcampSimpleResponse> findByIdSimpleResponse(Long id) {
+        return repository.findById(id)
+                .flatMap(bootcamp -> {
+                        BootcampSimpleResponse b = new BootcampSimpleResponse();
+                        b.setDuracion(bootcamp.getDuracion());
+                        b.setFechaLanzamiento(bootcamp.getFechaLanzamiento());
+                        b.setFechaFinalizacion(bootcamp.getFechaLanzamiento().plusDays(bootcamp.getDuracion()));
+                        b.setNombre(bootcamp.getNombre());
+                        b.setId(bootcamp.getId());
+                        return Mono.just(b);
+                }
+
+                );
     }
 
     @Override
@@ -106,7 +123,7 @@ public class BootcampService implements BootcampUseCases {
                     Bootcamp bootcamp = new Bootcamp();
                     bootcamp.setNombre(request.getNombre());
                     bootcamp.setDescripcion(request.getDescripcion());
-                    bootcamp.setFechaLanzamiento(LocalDate.now());
+                    bootcamp.setFechaLanzamiento(request.getFechaLanzamiento());
                     bootcamp.setDuracion(request.getDuracion());
 
                     return repository.save(bootcamp)
@@ -175,6 +192,8 @@ public class BootcampService implements BootcampUseCases {
         }
         return Mono.empty();
     }
+
+
 
     @Data
     @AllArgsConstructor

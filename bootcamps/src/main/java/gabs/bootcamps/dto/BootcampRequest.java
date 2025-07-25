@@ -18,5 +18,6 @@ public class BootcampRequest {
         private String descripcion;
         private List<Long> capacidades;
         private Integer duracion;
+        private LocalDate fechaLanzamiento;
 
 }

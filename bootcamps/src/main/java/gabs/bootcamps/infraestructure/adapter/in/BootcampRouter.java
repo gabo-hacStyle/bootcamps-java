@@ -16,6 +16,7 @@ public class BootcampRouter {
         return RouterFunctions.route()
                 .GET(PATH, handler::getAll)
                 .GET(PATH + "/{id}", handler::getById)
+                .GET(PATH + "/simple/{id}", handler::getSimpleBootcampResponseById)
                 //.GET(PATH + "/name/{nombre}", handler::findByNombre)
                 .POST(PATH , handler::save)
                 //.PUT(PATH + "/{id}", handler::update)

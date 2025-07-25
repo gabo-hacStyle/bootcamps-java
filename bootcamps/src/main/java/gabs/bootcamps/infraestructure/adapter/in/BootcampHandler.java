@@ -6,6 +6,7 @@ import gabs.bootcamps.domain.model.Bootcamp;
 
 import gabs.bootcamps.dto.BootcampRequest;
 import gabs.bootcamps.dto.BootcampResponse;
+import gabs.bootcamps.dto.BootcampSimpleResponse;
 import gabs.bootcamps.dto.PageAndQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +50,16 @@ public class BootcampHandler {
         return ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(capacidad, BootcampResponse.class);
+
+    }
+
+
+    public Mono<ServerResponse> getSimpleBootcampResponseById(ServerRequest request) {
+        Long id = Long.valueOf(request.pathVariable("id"));
+        Mono<BootcampSimpleResponse> capacidad = service.findByIdSimpleResponse(id);
+        return ServerResponse.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(capacidad, BootcampSimpleResponse.class);
 
     }
 

@@ -17,7 +17,7 @@ public class CapacidadesClient {
     private final WebClient webClient;
 
     public CapacidadesClient(WebClient.Builder builder) {
-        this.webClient = builder.baseUrl("http://localhost:8081/skill").build();
+        this.webClient = builder.baseUrl("http://capacidades-micro:8081/skill").build();
     }
 
     public Mono<Boolean> existsCapsById(Long id) {
