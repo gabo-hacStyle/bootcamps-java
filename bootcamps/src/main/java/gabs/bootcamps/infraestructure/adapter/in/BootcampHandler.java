@@ -17,6 +17,9 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Arrays;
+import java.util.List;
+
 
 @Component
 @RequiredArgsConstructor
@@ -54,12 +57,19 @@ public class BootcampHandler {
     }
 
 
-    public Mono<ServerResponse> getSimpleBootcampResponseById(ServerRequest request) {
-        Long id = Long.valueOf(request.pathVariable("id"));
-        Mono<BootcampSimpleResponse> capacidad = service.findByIdSimpleResponse(id);
+    public Mono<ServerResponse> getSimpleBootcampResponseByIds(ServerRequest request) {
+        List<Long> ids = request.queryParams().getOrDefault("ids", List.of())
+                .stream()
+                .flatMap(idsStr -> Arrays.stream(idsStr.split(",")))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(Long::valueOf)
+                .toList();
+
+        Flux<BootcampSimpleResponse> bootcamps = service.findByIdSimpleResponse(ids);
         return ServerResponse.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(capacidad, BootcampSimpleResponse.class);
+                .body(bootcamps, BootcampSimpleResponse.class);
 
     }
 

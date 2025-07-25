@@ -99,8 +99,8 @@ public class BootcampService implements BootcampUseCases {
     }
 
     @Override
-    public Mono<BootcampSimpleResponse> findByIdSimpleResponse(Long id) {
-        return repository.findById(id)
+    public Flux<BootcampSimpleResponse> findByIdSimpleResponse(List<Long> ids) {
+        return repository.findByIds(ids)
                 .flatMap(bootcamp -> {
                         BootcampSimpleResponse b = new BootcampSimpleResponse();
                         b.setDuracion(bootcamp.getDuracion());

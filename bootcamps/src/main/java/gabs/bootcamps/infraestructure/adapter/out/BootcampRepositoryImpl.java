@@ -7,6 +7,8 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Repository
 @RequiredArgsConstructor
 
@@ -35,6 +37,11 @@ public class BootcampRepositoryImpl implements BootcampRepositoryPort {
     @Override
     public Mono<Bootcamp> findById(Long id) {
         return repository.findById(id);
+    }
+
+    @Override
+    public Flux<Bootcamp> findByIds(List<Long> ids) {
+        return repository.findAllById(ids);
     }
 
 

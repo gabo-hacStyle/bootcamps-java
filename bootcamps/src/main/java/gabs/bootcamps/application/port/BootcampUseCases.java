@@ -9,11 +9,13 @@ import gabs.bootcamps.dto.PageAndQuery;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 public interface BootcampUseCases {
 
      Flux<BootcampResponse> findAll(PageAndQuery consult);
      Mono<BootcampResponse> findById(Long id);
-     Mono<BootcampSimpleResponse> findByIdSimpleResponse(Long id);
+     Flux<BootcampSimpleResponse> findByIdSimpleResponse(List<Long> bootcampsId);
 
      Mono<Bootcamp> register(BootcampRequest request);
 
