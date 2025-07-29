@@ -18,7 +18,7 @@ public class BootcampClient {
     private final WebClient webClient;
 
     public BootcampClient(WebClient.Builder builder) {
-        this.webClient = builder.baseUrl("http://bootcamps-micro:8082/bootcamp").build();
+        this.webClient = builder.baseUrl("http://localhost:8082/bootcamp").build();
     }
 
 

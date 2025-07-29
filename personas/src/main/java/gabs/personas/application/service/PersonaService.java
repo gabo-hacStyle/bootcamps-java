@@ -4,21 +4,21 @@ import gabs.personas.application.port.PersonaUseCases;
 import gabs.personas.domain.model.Persona;
 import gabs.personas.domain.port.PersonaRepositoryPort;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import gabs.personas.dto.PersonaReportResponse;
+import gabs.personas.infraestructure.adapter.out.ReportClient;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PersonaService implements PersonaUseCases {
 
     private final PersonaRepositoryPort repository;
+    private final ReportClient webClient;
 
 
 
@@ -36,13 +36,22 @@ public class PersonaService implements PersonaUseCases {
     }
 
     @Override
-    public Mono<Persona> register(Persona request) {
 
+    public Mono<Persona> register(Persona request) {
         return repository.existsByCorreo(request.getCorreo())
-                .flatMap(exists -> exists
-                        ? Mono.error(new IllegalArgumentException("El correo ya está en uso"))
-                        : repository.save(request)
-                );
+                .flatMap(exists -> {
+                    if (exists) {
+                        return Mono.error(new IllegalArgumentException("El correo ya está en uso"));
+                    } else {
+                        return repository.save(request)
+                                .flatMap(personaGuardada -> {
+                                    PersonaReportResponse response = personaMapperToPersonaReportResponse(personaGuardada);
+                                    log.info("PersonaReport enviada a webclient: {}", response);
+                                    return webClient.postPersonaReport(response)
+                                            .thenReturn(personaGuardada);
+                                });
+                    }
+                });
     }
     @Override
     public Mono<Persona> updateParcial(Long id, Persona changes) {
@@ -67,6 +76,15 @@ public class PersonaService implements PersonaUseCases {
     @Override
     public Mono<Void> delete(Long id) { return repository.deleteById(id); }
 
+    private PersonaReportResponse personaMapperToPersonaReportResponse(Persona persona){
+         PersonaReportResponse personaResponse = new PersonaReportResponse();
+         personaResponse.setPersonaId(persona.getId());
+         personaResponse.setCorreo(persona.getCorreo());
+         personaResponse.setNombre(persona.getNombre());
+         personaResponse.setEdad(persona.getEdad());
+
+         return personaResponse;
+    }
 
 
 }

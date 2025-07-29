@@ -7,8 +7,10 @@ import gabs.personas.domain.port.PersonaRepositoryPort;
 import gabs.personas.dto.BootcampSimpleResponse;
 import gabs.personas.dto.EnrollRequest;
 import gabs.personas.dto.PersonaRegisteredResponse;
-import gabs.personas.infraestructure.adapter.in.BootcampClient;
+import gabs.personas.infraestructure.adapter.out.BootcampClient;
+import gabs.personas.infraestructure.adapter.out.ReportClient;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -19,11 +21,13 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BootcampPersonaService implements BootcampPersonaUseCases {
 
     private final BootcampPersonaRepositoryPort repository;
     private final PersonaRepositoryPort personaRepository;
     private final BootcampClient bootcampClient;
+    private final ReportClient reportClient;
 
 
     @Override
@@ -50,6 +54,7 @@ public class BootcampPersonaService implements BootcampPersonaUseCases {
 
                                     // 5. Hacer una sola petición para traer info de todos los bootcamps
                                     String idsString = allIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+                                    log.info("Ids String: {}", idsString);
 
                                     return bootcampClient.bringSimpleResponseForManyBootcamps(idsString)
                                             .collectList()
@@ -84,11 +89,15 @@ public class BootcampPersonaService implements BootcampPersonaUseCases {
                                                         .map(saved -> {
                                                             PersonaRegisteredResponse resp = new PersonaRegisteredResponse();
                                                             resp.setNombrePersona(persona.getNombre());
+                                                            resp.setCorreoPersona(persona.getCorreo());
                                                             resp.setPersonaId(personaId);
                                                             resp.setBootcampId(bootcampId);
                                                             resp.setNombreBootcamp(nuevo.getNombre());
+
                                                             return resp;
-                                                        });
+                                                        })
+                                                        .flatMap(resp -> reportClient.postInscriptionReport(resp)
+                                                                .thenReturn(resp));
                                             });
                                 })
                 );

@@ -12,7 +12,7 @@ public class ReportClient {
     private final WebClient webClient;
 
     public ReportClient(WebClient.Builder builder) {
-        this.webClient = builder.baseUrl("http://reports-micro:8084/reports").build();
+        this.webClient = builder.baseUrl("http://localhost:8084/reports").build();
     }
 
     public Mono<Void>  postPersonaReport (PersonaReportResponse persona) {

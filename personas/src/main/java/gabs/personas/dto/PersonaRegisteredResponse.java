@@ -15,5 +15,6 @@ public class PersonaRegisteredResponse {
     private Long personaId;
     private Long bootcampId;
     private String nombreBootcamp;
+    private String correoPersona;
 
 }
