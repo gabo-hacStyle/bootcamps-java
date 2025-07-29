@@ -1,6 +1,8 @@
 package gabs.bootcamps.infraestructure.adapter.out;
 
 
+import gabs.bootcamps.domain.model.Bootcamp;
+import gabs.bootcamps.dto.BootcampResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -12,14 +14,14 @@ public class ReportsClient {
 
     private final WebClient webClient;
 
-    public CapacidadesClient(WebClient.Builder builder) {
-        this.webClient = builder.baseUrl("http://localhost:8084/reports").build();
+    public ReportsClient(WebClient.Builder builder) {
+        this.webClient = builder.baseUrl("http://reports-micro:8084/reports").build();
     }
 
-    public Mono<Void> postCapacidadesByBootcampId(Long id, List<Long> capsList){
+    public Mono<Void> postBootcampReport(BootcampResponse bootcamp){
         return webClient.post()
-                .uri("/bootcamp/{id}", id)
-                .bodyValue(capsList)
+                .uri("/bootcamps")
+                .bodyValue(bootcamp)
                 .retrieve()
                 .bodyToMono(Void.class);
     }

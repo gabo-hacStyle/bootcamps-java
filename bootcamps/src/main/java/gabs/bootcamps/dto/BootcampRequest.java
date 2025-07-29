@@ -14,6 +14,7 @@ import java.util.List;
 
 public class BootcampRequest {
 
+
         private String nombre;
         private String descripcion;
         private List<Long> capacidades;

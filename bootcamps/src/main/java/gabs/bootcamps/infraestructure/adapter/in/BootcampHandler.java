@@ -2,7 +2,12 @@ package gabs.bootcamps.infraestructure.adapter.in;
 
 
 import gabs.bootcamps.application.port.BootcampUseCases;
+import gabs.bootcamps.domain.exception.BootcampException;
+import gabs.bootcamps.domain.exception.BootcampNotFoundException;
+import gabs.bootcamps.domain.exception.BootcampValidationException;
+import gabs.bootcamps.domain.exception.ExternalServiceException;
 import gabs.bootcamps.domain.model.Bootcamp;
+import gabs.bootcamps.infraestructure.config.GlobalExceptionHandler;
 
 import gabs.bootcamps.dto.BootcampRequest;
 import gabs.bootcamps.dto.BootcampResponse;
@@ -26,51 +31,70 @@ import java.util.List;
 @Slf4j
 public class BootcampHandler {
 
-
     private final BootcampUseCases service;
+    private final GlobalExceptionHandler exceptionHandler;
 
 
     public Mono<ServerResponse> getAll (ServerRequest request) {
-        int page = Integer.parseInt(request.queryParam("page").orElse("0"));
-        int size = Integer.parseInt(request.queryParam("size").orElse("10"));
-        String sortBy = request.queryParam("sortBy").orElse("nombre");
-        String direction = request.queryParam("direction").orElse("asc");
+        try {
+            int page = Integer.parseInt(request.queryParam("page").orElse("0"));
+            int size = Integer.parseInt(request.queryParam("size").orElse("10"));
+            String sortBy = request.queryParam("sortBy").orElse("nombre");
+            String direction = request.queryParam("direction").orElse("asc");
 
-        PageAndQuery consult = new PageAndQuery(page, size, sortBy, direction);
+            PageAndQuery consult = new PageAndQuery(page, size, sortBy, direction);
 
-        System.out.println("SortBy: " + consult.getSortBy() + ", Direction: " + consult.getDirection());
-        log.info("SortBy: {}, Direction: {}", consult.getSortBy(), consult.getDirection());
+            log.info("SortBy: {}, Direction: {}", consult.getSortBy(), consult.getDirection());
 
-        Flux<BootcampResponse> all = service.findAll(consult);
-        return ServerResponse.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(all, BootcampResponse.class);
-
+            Flux<BootcampResponse> all = service.findAll(consult);
+            return ServerResponse.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(all, BootcampResponse.class)
+                    .onErrorResume(BootcampException.class, ex -> exceptionHandler.handleBootcampException(ex, request))
+                    .onErrorResume(Throwable.class, ex -> exceptionHandler.handleGenericException(ex, request));
+        } catch (NumberFormatException e) {
+            return exceptionHandler.handleIllegalArgumentException(
+                new IllegalArgumentException("Los parámetros page y size deben ser números válidos"), request);
+        }
     }
     public Mono<ServerResponse> getById(ServerRequest request) {
-        Long id = Long.valueOf(request.pathVariable("id"));
-        Mono<BootcampResponse> capacidad = service.findById(id);
-        return ServerResponse.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(capacidad, BootcampResponse.class);
-
+        try {
+            Long id = Long.valueOf(request.pathVariable("id"));
+            Mono<BootcampResponse> bootcamp = service.findById(id);
+            return ServerResponse.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(bootcamp, BootcampResponse.class)
+                    .onErrorResume(BootcampNotFoundException.class, ex -> exceptionHandler.handleBootcampNotFoundException(ex, request))
+                    .onErrorResume(ExternalServiceException.class, ex -> exceptionHandler.handleExternalServiceException(ex, request))
+                    .onErrorResume(BootcampException.class, ex -> exceptionHandler.handleBootcampException(ex, request))
+                    .onErrorResume(Throwable.class, ex -> exceptionHandler.handleGenericException(ex, request));
+        } catch (NumberFormatException e) {
+            return exceptionHandler.handleIllegalArgumentException(
+                new IllegalArgumentException("El ID debe ser un número válido"), request);
+        }
     }
 
 
     public Mono<ServerResponse> getSimpleBootcampResponseByIds(ServerRequest request) {
-        List<Long> ids = request.queryParams().getOrDefault("ids", List.of())
-                .stream()
-                .flatMap(idsStr -> Arrays.stream(idsStr.split(",")))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .map(Long::valueOf)
-                .toList();
+        try {
+            List<Long> ids = request.queryParams().getOrDefault("ids", List.of())
+                    .stream()
+                    .flatMap(idsStr -> Arrays.stream(idsStr.split(",")))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .map(Long::valueOf)
+                    .toList();
 
-        Flux<BootcampSimpleResponse> bootcamps = service.findByIdSimpleResponse(ids);
-        return ServerResponse.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(bootcamps, BootcampSimpleResponse.class);
-
+            Flux<BootcampSimpleResponse> bootcamps = service.findByIdSimpleResponse(ids);
+            return ServerResponse.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(bootcamps, BootcampSimpleResponse.class)
+                    .onErrorResume(BootcampException.class, ex -> exceptionHandler.handleBootcampException(ex, request))
+                    .onErrorResume(Throwable.class, ex -> exceptionHandler.handleGenericException(ex, request));
+        } catch (NumberFormatException e) {
+            return exceptionHandler.handleIllegalArgumentException(
+                new IllegalArgumentException("Los IDs deben ser números válidos"), request);
+        }
     }
 
     //public Mono<ServerResponse> findByNombre(ServerRequest request) {
@@ -83,10 +107,17 @@ public class BootcampHandler {
     //}
 
     public Mono<ServerResponse> save(ServerRequest request) {
-        Mono<BootcampRequest> newBootcamp= request.bodyToMono(BootcampRequest.class);
-        return newBootcamp.flatMap(t -> ServerResponse.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(service.register(t), Bootcamp.class));
+        return request.bodyToMono(BootcampRequest.class)
+                .flatMap(bootcampRequest -> 
+                    ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(service.register(bootcampRequest), Bootcamp.class)
+                        .onErrorResume(BootcampValidationException.class, ex -> exceptionHandler.handleBootcampValidationException(ex, request))
+                        .onErrorResume(ExternalServiceException.class, ex -> exceptionHandler.handleExternalServiceException(ex, request))
+                        .onErrorResume(BootcampException.class, ex -> exceptionHandler.handleBootcampException(ex, request))
+                        .onErrorResume(Throwable.class, ex -> exceptionHandler.handleGenericException(ex, request))
+                )
+                .onErrorResume(Throwable.class, ex -> exceptionHandler.handleGenericException(ex, request));
     }
     //public Mono<ServerResponse> update(ServerRequest request) {
     //    Long id = Long.valueOf(request.pathVariable("id"));
@@ -98,11 +129,19 @@ public class BootcampHandler {
     //}
 //
     public Mono<ServerResponse> delete(ServerRequest request) {
-        Long id = Long.valueOf(request.pathVariable("id"));
-        return ServerResponse.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(service.delete(id), Void.class);
-
+        try {
+            Long id = Long.valueOf(request.pathVariable("id"));
+            return ServerResponse.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(service.delete(id), Void.class)
+                    .onErrorResume(BootcampNotFoundException.class, ex -> exceptionHandler.handleBootcampNotFoundException(ex, request))
+                    .onErrorResume(ExternalServiceException.class, ex -> exceptionHandler.handleExternalServiceException(ex, request))
+                    .onErrorResume(BootcampException.class, ex -> exceptionHandler.handleBootcampException(ex, request))
+                    .onErrorResume(Throwable.class, ex -> exceptionHandler.handleGenericException(ex, request));
+        } catch (NumberFormatException e) {
+            return exceptionHandler.handleIllegalArgumentException(
+                new IllegalArgumentException("El ID debe ser un número válido"), request);
+        }
     }
 
 

@@ -1,6 +1,11 @@
 package gabs.bootcamps.application.service;
 
 import gabs.bootcamps.application.port.BootcampUseCases;
+import gabs.bootcamps.domain.event.BootcampCreatedEvent;
+import gabs.bootcamps.domain.exception.BootcampNotFoundException;
+import gabs.bootcamps.domain.exception.BootcampValidationException;
+import gabs.bootcamps.domain.exception.ExternalServiceException;
+import gabs.bootcamps.domain.exception.BootcampException;
 import gabs.bootcamps.domain.model.Bootcamp;
 
 import gabs.bootcamps.domain.port.BootcampRepositoryPort;
@@ -8,9 +13,13 @@ import gabs.bootcamps.domain.port.BootcampRepositoryPort;
 import gabs.bootcamps.dto.*;
 
 import gabs.bootcamps.infraestructure.adapter.in.CapacidadesClient;
+import gabs.bootcamps.infraestructure.adapter.out.ReportsClient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -25,6 +34,8 @@ public class BootcampService implements BootcampUseCases {
 
     private final BootcampRepositoryPort repository;
     private final CapacidadesClient capacidadesClient;
+    private final ReportsClient reportsClient;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     public Flux<BootcampResponse> findAll(PageAndQuery consult) {
@@ -51,7 +62,7 @@ public class BootcampService implements BootcampUseCases {
                             b.setFechaLanzamiento(btcmp.getFechaLanzamiento());
                             b.setCapacidades(caps);
                             b.setId(btcmp.getId());
-                            b.setFechaFinalizacion(btcmp.getFechaLanzamiento().plusDays(btcmp.getDuracion()));
+                            b.setFechaFinalizacion(btcmp.getFechaFinalizacion());
                             return new BootcampOrderByCapsQuantityDto(b, caps.size());
                         })
                 );
@@ -75,27 +86,26 @@ public class BootcampService implements BootcampUseCases {
 
     @Override
     public Mono<BootcampResponse> findById(Long id) {
-
-
-       return repository.findById(id)
-               .flatMap(bootcamp ->
-                       capacidadesClient.getById(bootcamp.getId())
-                               .collectList()
-                               .map(capacidades -> {
-                                   BootcampResponse response = new BootcampResponse();
-                                   response.setNombre(bootcamp.getNombre());
-                                   response.setDescripcion(bootcamp.getDescripcion());
-                                   response.setId(bootcamp.getId());
-                                   response.setDuracion(bootcamp.getDuracion());
-                                   response.setFechaLanzamiento(bootcamp.getFechaLanzamiento());
-                                   response.setFechaFinalizacion(
-                                           bootcamp.getFechaLanzamiento().plusDays(bootcamp.getDuracion())
-                                   );
-                                   response.setCapacidades(capacidades);
-                                   return response;
-                               })
-
-               );
+        return repository.findById(id)
+                .switchIfEmpty(Mono.error(new BootcampNotFoundException(id)))
+                .flatMap(bootcamp ->
+                        capacidadesClient.getById(bootcamp.getId())
+                                .collectList()
+                                .onErrorMap(throwable -> ExternalServiceException.capacidadesServiceError(throwable.getMessage()))
+                                .map(capacidades -> {
+                                    BootcampResponse response = new BootcampResponse();
+                                    response.setNombre(bootcamp.getNombre());
+                                    response.setDescripcion(bootcamp.getDescripcion());
+                                    response.setId(bootcamp.getId());
+                                    response.setDuracion(bootcamp.getDuracion());
+                                    response.setFechaLanzamiento(bootcamp.getFechaLanzamiento());
+                                    response.setFechaFinalizacion(
+                                            bootcamp.getFechaFinalizacion()
+                                    );
+                                    response.setCapacidades(capacidades);
+                                    return response;
+                                })
+                );
     }
 
     @Override
@@ -105,7 +115,7 @@ public class BootcampService implements BootcampUseCases {
                         BootcampSimpleResponse b = new BootcampSimpleResponse();
                         b.setDuracion(bootcamp.getDuracion());
                         b.setFechaLanzamiento(bootcamp.getFechaLanzamiento());
-                        b.setFechaFinalizacion(bootcamp.getFechaLanzamiento().plusDays(bootcamp.getDuracion()));
+                        b.setFechaFinalizacion(bootcamp.getFechaFinalizacion());
                         b.setNombre(bootcamp.getNombre());
                         b.setId(bootcamp.getId());
                         return Mono.just(b);
@@ -125,33 +135,40 @@ public class BootcampService implements BootcampUseCases {
                     bootcamp.setDescripcion(request.getDescripcion());
                     bootcamp.setFechaLanzamiento(request.getFechaLanzamiento());
                     bootcamp.setDuracion(request.getDuracion());
+                    bootcamp.setFechaFinalizacion(request.getFechaLanzamiento().plusDays(request.getDuracion()));
 
                     return repository.save(bootcamp)
                             .flatMap(saved ->
                                     capacidadesClient.postCapacidadesByBootcampId(saved.getId(), capsIds)
                                             .then(Mono.just(saved))
                             );
+                })
+                .doOnSuccess(savedBootcamp -> {
+                    if (savedBootcamp != null) {
+                        applicationEventPublisher.publishEvent(new BootcampCreatedEvent(savedBootcamp.getId()));
+                    }
                 });
-
-
-
-
     }
 
 
     @Override
     public Mono<Void> delete(Long id) {
-        return capacidadesClient.delete(id)
-                .then(repository.deleteById(id));
+        return repository.findById(id)
+                .switchIfEmpty(Mono.error(new BootcampNotFoundException(id)))
+                .flatMap(bootcamp -> 
+                    capacidadesClient.delete(id)
+                        .onErrorMap(throwable -> ExternalServiceException.capacidadesServiceError(throwable.getMessage()))
+                        .then(repository.deleteById(id))
+                        .onErrorMap(throwable -> new BootcampException("Error al eliminar el bootcamp", HttpStatus.INTERNAL_SERVER_ERROR))
+                );
     }
 
 
     private Mono<List<Long>> validateCapsExist(List<Long> capacidades) {
-
-
         return Flux.fromIterable(capacidades)
                 .flatMap(id ->
                         capacidadesClient.existsCapsById(id)
+                                .onErrorMap(throwable -> ExternalServiceException.capacidadesServiceError(throwable.getMessage()))
                                 .map(exists -> new AbstractMap.SimpleEntry<>(id, exists))
                 )
                 .collectList()
@@ -162,8 +179,7 @@ public class BootcampService implements BootcampUseCases {
                             .toList();
 
                     if (!invalidIds.isEmpty()) {
-                        String msg = "Las siguientes capacidades no existen: " + invalidIds;
-                        return Mono.error(new IllegalArgumentException(msg));
+                        return Mono.error(BootcampValidationException.capacidadesNotFound(invalidIds.toString()));
                     }
 
                     // Solo devuelve los ids válidos (o todos, si todos existen)
@@ -179,7 +195,7 @@ public class BootcampService implements BootcampUseCases {
 
     private Mono<Void> validateCapsQuantity(List<Long> capacidades) {
         if (capacidades == null || capacidades.size() < 1 || capacidades.size() > 4) {
-            return Mono.error(new IllegalArgumentException("Debe asociar entre 1 y 4 capacidades."));
+            return Mono.error(BootcampValidationException.invalidCapacidadesQuantity());
         }
 
         return Mono.empty();
@@ -188,7 +204,7 @@ public class BootcampService implements BootcampUseCases {
     private Mono<Void> validateDoubleCapacities(List<Long> capacidades) {
         HashSet<Long> set = new HashSet<>(capacidades);
         if (set.size() != capacidades.size()) {
-            return Mono.error(new IllegalArgumentException("No se permiten tecnologías repetidas."));
+            return Mono.error(BootcampValidationException.duplicateCapacidades());
         }
         return Mono.empty();
     }
