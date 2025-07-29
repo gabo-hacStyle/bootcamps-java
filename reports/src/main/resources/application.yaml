@@ -1,0 +1,16 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb+srv://reports_user:reports_user_password@reportes.m2dcqx4.mongodb.net/?retryWrites=true&w=majority&appName=reportes
+      database: reports
+  main:
+    web-application-type: reactive
+
+server:
+  port: 8084
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
