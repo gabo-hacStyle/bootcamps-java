@@ -1,7 +1,6 @@
 package gabs.tecnologias.infraestructure.adapter.in;
 
 
-import dto.CapacidadTecnologiaResponse;
 import gabs.tecnologias.application.port.CapacidadTecnologiaUseCases;
 import gabs.tecnologias.application.port.TecnologiaUseCases;
 import gabs.tecnologias.domain.model.Tecnologia;

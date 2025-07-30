@@ -1,0 +1,14 @@
+spring:
+  r2dbc:
+    url: r2dbc:h2:mem:///testdb
+    username: sa
+    password: 
+  sql:
+    init:
+      schema-locations: classpath:schema.sql
+      mode: always
+
+logging:
+  level:
+    gabs.personas: DEBUG
+    org.springframework.web: DEBUG 

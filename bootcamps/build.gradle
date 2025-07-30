@@ -34,6 +34,8 @@ dependencies {
     implementation 'dev.miku:r2dbc-mysql:0.8.2.RELEASE'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.5.0'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
 tasks.named('test') {

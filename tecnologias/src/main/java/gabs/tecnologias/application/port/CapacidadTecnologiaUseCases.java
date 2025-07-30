@@ -1,7 +1,7 @@
 package gabs.tecnologias.application.port;
 
-import dto.CapacidadTecnologiaResponse;
 import gabs.tecnologias.domain.model.CapacidadTecnologia;
+import gabs.tecnologias.dto.CapacidadTecnologiaResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

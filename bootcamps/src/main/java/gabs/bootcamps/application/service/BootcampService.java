@@ -11,8 +11,7 @@ import gabs.bootcamps.domain.model.Bootcamp;
 import gabs.bootcamps.domain.port.BootcampRepositoryPort;
 
 import gabs.bootcamps.dto.*;
-
-import gabs.bootcamps.infraestructure.adapter.in.CapacidadesClient;
+import gabs.bootcamps.infraestructure.adapter.out.CapacidadesClient;
 import gabs.bootcamps.infraestructure.adapter.out.ReportsClient;
 import lombok.AllArgsConstructor;
 import lombok.Data;

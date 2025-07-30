@@ -1,12 +1,15 @@
 package gabs.tecnologias.infraestructure.adapter.in;
 
-
-import dto.CapacidadTecnologiaResponse;
 import gabs.tecnologias.application.port.CapacidadTecnologiaUseCases;
+import gabs.tecnologias.dto.CapacidadTecnologiaResponse;
+import gabs.tecnologias.dto.RegisterCapacidadTecnologiaRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
@@ -21,6 +24,7 @@ import java.util.stream.Collectors;
 public class CapacidadTecnologiaHandler {
 
     private final CapacidadTecnologiaUseCases capService;
+    private final Validator validator;
 
     public Mono<ServerResponse> getTechsByCapacidadId(ServerRequest request){
         Long id = Long.valueOf(request.pathVariable("id"));
@@ -32,11 +36,10 @@ public class CapacidadTecnologiaHandler {
     }
 
     public Mono<ServerResponse> saveCapacidadTecnologia(ServerRequest request) {
-        Long capacidadId = Long.valueOf(request.pathVariable("id"));
-        Mono<List<Long>> tecnologiaIdsMono = request.bodyToMono(new ParameterizedTypeReference<List<Long>>() {});
-
-        return tecnologiaIdsMono
-                .flatMap(tecnologiaIds -> capService.register(capacidadId, tecnologiaIds).then())
+       
+        return request.bodyToMono(RegisterCapacidadTecnologiaRequest.class)
+                .flatMap(this::validateRegisterRequest)
+                .flatMap(registerRequest -> capService.register(registerRequest.getCapacidadId(), registerRequest.getTecnologiaIds()).then(Mono.empty()))
                 .then(ServerResponse.ok().build());
     }
 
@@ -52,5 +55,16 @@ public class CapacidadTecnologiaHandler {
         // 2. Llama al servicio reactivo
         return capService.deleteCapacidadesByCapacidadesIds(ids)
                 .then(ServerResponse.ok().build());
+    }
+    
+    private Mono<RegisterCapacidadTecnologiaRequest> validateRegisterRequest(RegisterCapacidadTecnologiaRequest request) {
+        Errors errors = new BeanPropertyBindingResult(request, "registerCapacidadTecnologiaRequest");
+        validator.validate(request, errors);
+        
+        if (errors.hasErrors()) {
+            return Mono.error(new RuntimeException("Error de validación: " + errors.getAllErrors()));
+        }
+        
+        return Mono.just(request);
     }
 }

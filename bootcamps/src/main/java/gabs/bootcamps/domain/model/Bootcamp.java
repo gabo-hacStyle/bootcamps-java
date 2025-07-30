@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDate;
@@ -26,4 +27,6 @@ public class Bootcamp {
     private LocalDate fechaLanzamiento;
     private Integer duracion;
 
+    @Column("fecha_finalizacion")
+    private LocalDate fechaFinalizacion;
 }

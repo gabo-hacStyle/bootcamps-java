@@ -1,4 +1,4 @@
-package gabs.bootcamps.infraestructure.adapter.in;
+package gabs.bootcamps.infraestructure.adapter.out;
 
 
 import gabs.bootcamps.dto.BootcampResponse;

@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  bootcamps-micro:
+    build: ./bootcamps-micro
+    container_name: bootcamps-micro
+    ports:
+      - "8082:8082"
+    restart: unless-stopped
+    networks:
+      - micro-red
+
+  reports-micro:
+    build: ./reports-micro
+    container_name: reports-micro
+    ports:
+      - "8084:8084"
+    restart: unless-stopped
+    networks:
+      - micro-red
+
+  personas-micro:
+    build: ./personas-micro
+    container_name: personas-micro
+    ports:
+      - "8083:8083"
+    restart: unless-stopped
+    networks:
+      - micro-red
+
+  capacidades-micro:
+    build: ./capacidades-micro
+    container_name: capacidades-micro
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
+    networks:
+      - micro-red
+
+  tecnologias-micro:
+    build: ./tecnologias-micro
+    container_name: tecnologias-micro
+    ports:
+      - "8085:8085"
+    restart: unless-stopped
+    networks:
+      - micro-red
+
+networks:
+  micro-red:
+    driver: bridge
