@@ -53,10 +53,12 @@ class InscripcionHandlerTest {
     @Test
     void registrarInscripcion_WithValidRequest_ShouldReturnOkResponse() {
         // Given
+        ServerRequest mockRequest = createServerRequest(validInscripcion);
+        when(mockRequest.bodyToMono(Inscripcion.class)).thenReturn(Mono.just(validInscripcion));
         when(inscripcionService.save(any(Inscripcion.class))).thenReturn(Mono.just(savedInscripcion));
 
         // When & Then
-        StepVerifier.create(inscripcionHandler.registrarInscripcion(createServerRequest(validInscripcion)))
+        StepVerifier.create(inscripcionHandler.registrarInscripcion(mockRequest))
                 .expectNextMatches(response -> response.statusCode().value() == 200)
                 .verifyComplete();
 
@@ -66,13 +68,15 @@ class InscripcionHandlerTest {
     @Test
     void registrarInscripcion_WithValidationException_ShouldHandleError() {
         // Given
+        ServerRequest mockRequest = createServerRequest(validInscripcion);
+        when(mockRequest.bodyToMono(Inscripcion.class)).thenReturn(Mono.just(validInscripcion));
         when(inscripcionService.save(any(Inscripcion.class)))
                 .thenReturn(Mono.error(new gabs.reports.domain.exception.ValidationException("Invalid data")));
         when(exceptionHandler.handleValidationException(any(), any()))
-                .thenReturn(Mono.just(ServerResponse.badRequest().build()));
+                .thenReturn(ServerResponse.badRequest().build());
 
         // When & Then
-        StepVerifier.create(inscripcionHandler.registrarInscripcion(createServerRequest(validInscripcion)))
+        StepVerifier.create(inscripcionHandler.registrarInscripcion(mockRequest))
                 .expectNextMatches(response -> response.statusCode().value() == 400)
                 .verifyComplete();
 
@@ -83,13 +87,15 @@ class InscripcionHandlerTest {
     @Test
     void registrarInscripcion_WithGenericException_ShouldHandleError() {
         // Given
+        ServerRequest mockRequest = createServerRequest(validInscripcion);
+        when(mockRequest.bodyToMono(Inscripcion.class)).thenReturn(Mono.just(validInscripcion));
         when(inscripcionService.save(any(Inscripcion.class)))
                 .thenReturn(Mono.error(new RuntimeException("Unexpected error")));
         when(exceptionHandler.handleGenericException(any(), any()))
-                .thenReturn(Mono.just(ServerResponse.status(500).build()));
+                .thenReturn(ServerResponse.status(500).build());
 
         // When & Then
-        StepVerifier.create(inscripcionHandler.registrarInscripcion(createServerRequest(validInscripcion)))
+        StepVerifier.create(inscripcionHandler.registrarInscripcion(mockRequest))
                 .expectNextMatches(response -> response.statusCode().value() == 500)
                 .verifyComplete();
 
@@ -99,6 +105,6 @@ class InscripcionHandlerTest {
 
     private ServerRequest createServerRequest(Object body) {
         // Mock implementation for testing
-        return ServerRequest.create(null, null);
+        return mock(ServerRequest.class);
     }
 } 

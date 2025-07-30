@@ -49,10 +49,12 @@ class PersonaHandlerTest {
     @Test
     void crearPersona_WithValidRequest_ShouldReturnOkResponse() {
         // Given
+        ServerRequest mockRequest = createServerRequest(validPersona);
+        when(mockRequest.bodyToMono(Persona.class)).thenReturn(Mono.just(validPersona));
         when(personaService.save(any(Persona.class))).thenReturn(Mono.just(savedPersona));
 
         // When & Then
-        StepVerifier.create(personaHandler.crearPersona(createServerRequest(validPersona)))
+        StepVerifier.create(personaHandler.crearPersona(mockRequest))
                 .expectNextMatches(response -> response.statusCode().value() == 200)
                 .verifyComplete();
 
@@ -62,13 +64,15 @@ class PersonaHandlerTest {
     @Test
     void crearPersona_WithValidationException_ShouldHandleError() {
         // Given
+        ServerRequest mockRequest = createServerRequest(validPersona);
+        when(mockRequest.bodyToMono(Persona.class)).thenReturn(Mono.just(validPersona));
         when(personaService.save(any(Persona.class)))
                 .thenReturn(Mono.error(new gabs.reports.domain.exception.ValidationException("Invalid data")));
         when(exceptionHandler.handleValidationException(any(), any()))
-                .thenReturn(Mono.just(ServerResponse.badRequest().build()));
+                .thenReturn(ServerResponse.badRequest().build());
 
         // When & Then
-        StepVerifier.create(personaHandler.crearPersona(createServerRequest(validPersona)))
+        StepVerifier.create(personaHandler.crearPersona(mockRequest))
                 .expectNextMatches(response -> response.statusCode().value() == 400)
                 .verifyComplete();
 
@@ -79,13 +83,15 @@ class PersonaHandlerTest {
     @Test
     void crearPersona_WithGenericException_ShouldHandleError() {
         // Given
+        ServerRequest mockRequest = createServerRequest(validPersona);
+        when(mockRequest.bodyToMono(Persona.class)).thenReturn(Mono.just(validPersona));
         when(personaService.save(any(Persona.class)))
                 .thenReturn(Mono.error(new RuntimeException("Unexpected error")));
         when(exceptionHandler.handleGenericException(any(), any()))
-                .thenReturn(Mono.just(ServerResponse.status(500).build()));
+                .thenReturn(ServerResponse.status(500).build());
 
         // When & Then
-        StepVerifier.create(personaHandler.crearPersona(createServerRequest(validPersona)))
+        StepVerifier.create(personaHandler.crearPersona(mockRequest))
                 .expectNextMatches(response -> response.statusCode().value() == 500)
                 .verifyComplete();
 
@@ -95,6 +101,6 @@ class PersonaHandlerTest {
 
     private ServerRequest createServerRequest(Object body) {
         // Mock implementation for testing
-        return ServerRequest.create(null, null);
+        return mock(ServerRequest.class);
     }
 } 

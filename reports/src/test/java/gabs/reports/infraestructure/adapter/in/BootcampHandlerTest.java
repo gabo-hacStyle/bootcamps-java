@@ -64,10 +64,12 @@ class BootcampHandlerTest {
     @Test
     void registrarBootcamp_WithValidRequest_ShouldReturnOkResponse() {
         // Given
+        ServerRequest mockRequest = createServerRequest(validBootcampRequest);
+        when(mockRequest.bodyToMono(BootcampRequest.class)).thenReturn(Mono.just(validBootcampRequest));
         when(bootcampService.register(any(BootcampRequest.class))).thenReturn(Mono.just(savedBootcamp));
 
         // When & Then
-        StepVerifier.create(bootcampHandler.registrarBootcamp(createServerRequest(validBootcampRequest)))
+        StepVerifier.create(bootcampHandler.registrarBootcamp(mockRequest))
                 .expectNextMatches(response -> response.statusCode().value() == 200)
                 .verifyComplete();
 
@@ -77,10 +79,11 @@ class BootcampHandlerTest {
     @Test
     void bootcampConMasInscritos_WithValidData_ShouldReturnOkResponse() {
         // Given
+        ServerRequest mockRequest = createEmptyServerRequest();
         when(bootcampService.findBootcampConMasInscritos()).thenReturn(Mono.just(bootcampResponse));
 
         // When & Then
-        StepVerifier.create(bootcampHandler.bootcampConMasInscritos(createEmptyServerRequest()))
+        StepVerifier.create(bootcampHandler.bootcampConMasInscritos(mockRequest))
                 .expectNextMatches(response -> response.statusCode().value() == 200)
                 .verifyComplete();
 
@@ -89,11 +92,11 @@ class BootcampHandlerTest {
 
     private ServerRequest createServerRequest(Object body) {
         // Mock implementation for testing
-        return ServerRequest.create(null, null);
+        return mock(ServerRequest.class);
     }
 
     private ServerRequest createEmptyServerRequest() {
         // Mock implementation for testing
-        return ServerRequest.create(null, null);
+        return mock(ServerRequest.class);
     }
 } 
