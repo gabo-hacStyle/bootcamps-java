@@ -13,6 +13,13 @@ import gabs.bootcamps.dto.BootcampRequest;
 import gabs.bootcamps.dto.BootcampResponse;
 import gabs.bootcamps.dto.BootcampSimpleResponse;
 import gabs.bootcamps.dto.PageAndQuery;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -29,13 +36,43 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Bootcamp", description = "API para gestión de bootcamps")
 public class BootcampHandler {
 
     private final BootcampUseCases service;
     private final GlobalExceptionHandler exceptionHandler;
 
-
-    public Mono<ServerResponse> getAll (ServerRequest request) {
+    @Operation(
+        summary = "Obtener todos los bootcamps",
+        description = "Retorna una lista paginada de todos los bootcamps con opciones de ordenamiento"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Lista de bootcamps obtenida exitosamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BootcampResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Parámetros de paginación inválidos",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = gabs.bootcamps.dto.ErrorResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Error interno del servidor",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = gabs.bootcamps.dto.ErrorResponse.class)
+            )
+        )
+    })
+    public Mono<ServerResponse> getAll(ServerRequest request) {
         try {
             int page = Integer.parseInt(request.queryParam("page").orElse("0"));
             int size = Integer.parseInt(request.queryParam("size").orElse("10"));
@@ -57,6 +94,45 @@ public class BootcampHandler {
                 new IllegalArgumentException("Los parámetros page y size deben ser números válidos"), request);
         }
     }
+    
+    @Operation(
+        summary = "Obtener bootcamp por ID",
+        description = "Retorna un bootcamp específico por su identificador único"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Bootcamp encontrado exitosamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BootcampResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Bootcamp no encontrado",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = gabs.bootcamps.dto.ErrorResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "ID inválido",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = gabs.bootcamps.dto.ErrorResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Error interno del servidor",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = gabs.bootcamps.dto.ErrorResponse.class)
+            )
+        )
+    })
     public Mono<ServerResponse> getById(ServerRequest request) {
         try {
             Long id = Long.valueOf(request.pathVariable("id"));
@@ -74,7 +150,36 @@ public class BootcampHandler {
         }
     }
 
-
+    @Operation(
+        summary = "Obtener bootcamps simplificados por IDs",
+        description = "Retorna una lista de bootcamps con información simplificada basada en una lista de IDs"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Lista de bootcamps simplificados obtenida exitosamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BootcampSimpleResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "IDs inválidos",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = gabs.bootcamps.dto.ErrorResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Error interno del servidor",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = gabs.bootcamps.dto.ErrorResponse.class)
+            )
+        )
+    })
     public Mono<ServerResponse> getSimpleBootcampResponseByIds(ServerRequest request) {
         try {
             List<Long> ids = request.queryParams().getOrDefault("ids", List.of())
@@ -106,6 +211,36 @@ public class BootcampHandler {
 //
     //}
 
+    @Operation(
+        summary = "Crear nuevo bootcamp",
+        description = "Crea un nuevo bootcamp con la información proporcionada"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Bootcamp creado exitosamente",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = Bootcamp.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Datos de validación inválidos",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = gabs.bootcamps.dto.ErrorResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Error interno del servidor",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = gabs.bootcamps.dto.ErrorResponse.class)
+            )
+        )
+    })
     public Mono<ServerResponse> save(ServerRequest request) {
         return request.bodyToMono(BootcampRequest.class)
                 .flatMap(bootcampRequest -> 
@@ -128,6 +263,40 @@ public class BootcampHandler {
 //
     //}
 //
+    @Operation(
+        summary = "Eliminar bootcamp por ID",
+        description = "Elimina un bootcamp específico por su identificador único"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Bootcamp eliminado exitosamente"
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Bootcamp no encontrado",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = gabs.bootcamps.dto.ErrorResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "ID inválido",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = gabs.bootcamps.dto.ErrorResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Error interno del servidor",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = gabs.bootcamps.dto.ErrorResponse.class)
+            )
+        )
+    })
     public Mono<ServerResponse> delete(ServerRequest request) {
         try {
             Long id = Long.valueOf(request.pathVariable("id"));
@@ -143,7 +312,5 @@ public class BootcampHandler {
                 new IllegalArgumentException("El ID debe ser un número válido"), request);
         }
     }
-
-
 
 }

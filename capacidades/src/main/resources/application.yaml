@@ -16,3 +16,8 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    doc-expansion: none
+  packages-to-scan: gabs.capacidades.infraestructure.adapter.in
+  paths-to-match: /api/**

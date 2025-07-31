@@ -12,6 +12,7 @@ import gabs.capacidades.domain.model.Capacidad;
 import gabs.capacidades.domain.port.CapacidadRepositoryPort;
 import gabs.capacidades.dto.CapacidadRequest;
 import gabs.capacidades.dto.CapacidadResponse;
+import gabs.capacidades.dto.CapacidadTecnologiasRequest;
 import gabs.capacidades.dto.PageAndQuery;
 import gabs.capacidades.infraestructure.adapter.in.TecnologiaClient;
 import reactor.core.publisher.Flux;
@@ -102,7 +103,7 @@ public class CapacidadService implements CapacidadUseCases {
 
                     return repository.save(capacidad)
                             .flatMap(saved ->
-                                    tecnologiaClient.postTecnologiasByCapacidadId(saved.getId(), validIds)
+                                    tecnologiaClient.postTecnologiasByCapacidadId(saved.getId(), new CapacidadTecnologiasRequest(validIds))
                                             .then(Mono.just(saved))
                             );
                 });

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import gabs.capacidades.dto.CapacidadResponse;
+import gabs.capacidades.dto.CapacidadTecnologiasRequest;
 import gabs.capacidades.dto.Tecnologias;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -40,7 +41,7 @@ public class TecnologiaClient {
                 .bodyToFlux(Tecnologias.class);
     }
 
-    public Mono<Void> postTecnologiasByCapacidadId(Long id, List<Long> techsList) {
+    public Mono<Void> postTecnologiasByCapacidadId(Long id, CapacidadTecnologiasRequest techsList) {
         return webClient.post()
                 .uri("/capacidad/{id}", id)
                 .bodyValue(techsList)
